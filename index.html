@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jurnal Guru Wali - SMPN 13 Bandarlampung</title>
+<style>
+  :root{
+    --navy:#1e3a5f; --navy-dark:#152a45; --accent:#2f80ed; --accent2:#27ae60;
+    --bg:#f4f6f9; --card:#ffffff; --border:#e1e6ec; --text:#26313f; --muted:#7a8899;
+    --warn:#e2933c; --danger:#e0554f;
+    --radius:12px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);}
+  .hidden{display:none !important;}
+  button{cursor:pointer;font-family:inherit;}
+  input,select,textarea{font-family:inherit;font-size:14px;}
+
+  /* ---------- LOGIN ---------- */
+  #view-login{min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);padding:16px;}
+  .login-card{background:var(--card);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;}
+  .login-card h1{font-size:18px;margin:14px 0 2px;color:var(--navy);}
+  .login-card p.sub{color:var(--muted);font-size:13px;margin:0 0 24px;}
+  .login-card input{width:100%;padding:12px 14px;margin-bottom:12px;border:1.5px solid var(--border);
+    border-radius:10px;font-size:15px;}
+  .login-card input:focus{outline:none;border-color:var(--accent);}
+  .btn-primary{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;
+    font-size:15px;font-weight:600;}
+  .btn-primary:hover{background:#2569c9;}
+  #login-error{color:var(--danger);font-size:13px;margin-top:10px;min-height:16px;}
+  .logo-circle{width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin:0 auto;}
+
+  /* ---------- LAYOUT ---------- */
+  #app-shell{display:none;min-height:100vh;flex-direction:column;}
+  header.topbar{background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;
+    justify-content:space-between;position:sticky;top:0;z-index:20;}
+  header.topbar .title{font-weight:700;font-size:15px;}
+  header.topbar .user-box{display:flex;align-items:center;gap:10px;font-size:13px;}
+  header.topbar button.logout{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;
+    padding:6px 12px;border-radius:8px;font-size:12px;}
+  nav.tabs{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--border);padding:0 12px;
+    overflow-x:auto;}
+  nav.tabs button{background:transparent;border:none;padding:12px 14px;font-size:13.5px;font-weight:600;
+    color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;}
+  nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);}
+  main{flex:1;padding:16px;max-width:1100px;margin:0 auto;width:100%;}
+
+  /* ---------- CARDS / DASHBOARD ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px;}
+  .stat-card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);}
+  .stat-card .num{font-size:26px;font-weight:800;color:var(--navy);}
+  .stat-card .lbl{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .stat-card.warn .num{color:var(--warn);}
+
+  .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:14px;}
+  .card h3{margin:0 0 12px;font-size:15px;color:var(--navy);}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
+  tr:hover td{background:#f8fafc;}
+  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .pill.ok{background:#e5f7ec;color:#1d8a4c;}
+  .pill.no{background:#fdecea;color:#c0392b;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn-sm{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12.5px;font-weight:600;color:var(--navy);}
+  .btn-sm.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn-sm.danger{background:#fff;color:var(--danger);border-color:#f3c6c3;}
+
+  input.search{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:12px;font-size:14px;}
+
+  /* ---------- FORMS ---------- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+  .form-group{margin-bottom:10px;}
+  .form-group.full{grid-column:1/-1;}
+  .form-group label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);
+    border-radius:8px;}
+  .form-group textarea{min-height:70px;resize:vertical;}
+  fieldset{border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;}
+  fieldset legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13.5px;}
+
+  .section-title{font-weight:700;color:var(--navy);margin:18px 0 8px;font-size:14.5px;border-left:4px solid var(--accent);padding-left:8px;}
+
+  /* checkpoint chips */
+  .checkpoint-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .checkpoint-tabs button{padding:7px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;}
+  .checkpoint-tabs button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .checkpoint-tabs button.filled::after{content:" ✓";color:var(--accent2);}
+
+  /* print */
+  #print-area{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #print-area, #print-area *{visibility:visible;}
+    #print-area{display:block !important;position:absolute;top:0;left:0;width:100%;padding:20px;}
+    .no-print{display:none !important;}
+  }
+  .print-page{page-break-after:always;padding:10px 0;}
+  .print-page table{margin-bottom:14px;}
+  .print-page h2{text-align:center;color:var(--navy);}
+  .print-page h4{background:#eef3fa;padding:6px 10px;border-radius:6px;color:var(--navy);}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;
+    padding:10px 20px;border-radius:10px;font-size:13.5px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+  .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13.5px;}
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN ======================= -->
+<div id="view-login">
+  <div class="login-card">
+    <div class="logo-circle">GW</div>
+    <h1>Jurnal Guru Wali</h1>
+    <p class="sub">SMPN 13 Bandarlampung</p>
+    <input type="text" id="login-username" placeholder="Username">
+    <input type="password" id="login-password" placeholder="Password (NIP/NUPTK)">
+    <button class="btn-primary" onclick="doLogin()">Masuk</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ======================= APP SHELL ======================= -->
+<div id="app-shell">
+  <header class="topbar">
+    <div class="title">📘 Jurnal Guru Wali</div>
+    <div class="user-box">
+      <span id="user-name-label"></span>
+      <button class="logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </header>
+  <nav class="tabs" id="main-tabs">
+    <button data-tab="dashboard" class="active" onclick="switchTab('dashboard')">Dashboard</button>
+    <button data-tab="siswa" onclick="switchTab('siswa')">Siswa Binaan</button>
+    <button data-tab="admin" onclick="switchTab('admin')" id="tab-admin-btn">Admin</button>
+  </nav>
+
+  <main>
+    <!-- ============ DASHBOARD ============ -->
+    <section id="tab-dashboard">
+      <div class="stat-grid" id="dashboard-stats"></div>
+      <div class="card">
+        <h3>Status Checklist Bulan Ini <span id="checkpoint-label" style="font-weight:400;color:var(--muted);font-size:12.5px;"></span></h3>
+        <table>
+          <thead><tr><th>Nama</th><th>Kelas</th><th>Checklist</th><th>Konsultasi</th><th></th></tr></thead>
+          <tbody id="dashboard-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ SISWA LIST ============ -->
+    <section id="tab-siswa" class="hidden">
+      <input type="text" class="search" id="siswa-search" placeholder="Cari nama siswa..." oninput="renderSiswaList()">
+      <div class="card">
+        <table>
+          <thead><tr><th>NISN</th><th>Nama</th><th>Kelas</th><th></th></tr></thead>
+          <tbody id="siswa-list-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ DETAIL SISWA (biodata + jurnal) ============ -->
+    <section id="tab-detail" class="hidden">
+      <button class="btn-sm no-print" onclick="switchTab('siswa')">&larr; Kembali ke daftar</button>
+      <h2 id="detail-nama-siswa" style="color:var(--navy);"></h2>
+      <div class="btn-row" style="margin-bottom:14px;">
+        <button class="btn-sm" onclick="openBiodataForm()">✏️ Edit Biodata</button>
+        <button class="btn-sm primary" onclick="openMonitoringPanel()">📝 Isi Catatan Pendampingan</button>
+        <button class="btn-sm" onclick="openKonsultasiForm()">💬 Tambah Catatan Konsultasi</button>
+        <button class="btn-sm" onclick="renderPrintArea(); window.print();">🖨️ Cetak Jurnal Lengkap</button>
+      </div>
+
+      <div class="card">
+        <h3>Ringkasan Biodata</h3>
+        <div id="detail-biodata-ringkas"></div>
+      </div>
+
+      <div class="card">
+        <h3>Catatan Pendampingan per Tahun</h3>
+        <div id="detail-monitoring-view"></div>
+      </div>
+
+      <div class="card">
+        <h3>Riwayat Konsultasi</h3>
+        <table>
+          <thead><tr><th>Tanggal</th><th>Permasalahan</th><th>Pihak Hadir</th><th></th></tr></thead>
+          <tbody id="detail-konsultasi-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ FORM BIODATA ============ -->
+    <section id="tab-biodata-form" class="hidden">
+      <button class="btn-sm" onclick="switchTab('detail')">&larr; Batal / Kembali</button>
+      <div class="card">
+        <h3>Biodata Murid</h3>
+        <div class="section-title">A. Data Pribadi</div>
+        <div class="form-grid" id="biodata-pribadi"></div>
+        <div class="section-title">B. Data Orang Tua / Wali</div>
+        <div class="form-grid" id="biodata-ortu"></div>
+        <div class="section-title">C. Riwayat Pendidikan & Kesehatan</div>
+        <div class="form-grid" id="biodata-riwayat"></div>
+        <div class="section-title">D. Hal Lain</div>
+        <div class="form-grid" id="biodata-hallain"></div>
+        <button class="btn-primary" style="margin-top:14px;max-width:220px;" onclick="submitBiodata()">💾 Simpan Biodata</button>
+      </div>
+    </section>
+
+    <!-- ============ FORM MONITORING ============ -->
+    <section id="tab-monitoring-form" class="hidden">
+      <button class="btn-sm" onclick="switchTab('detail')">&larr; Kembali</button>
+      <div class="card">
+        <h3>Catatan Pendampingan Murid</h3>
+        <div class="form-group" style="max-width:220px;">
+          <label>Tahun Ke-</label>
+          <select id="mon-tahunke" onchange="renderCheckpointTabs()">
+            <option value="1">Tahun Pertama (Kelas 7)</option>
+            <option value="2">Tahun Kedua (Kelas 8)</option>
+            <option value="3">Tahun Ketiga (Kelas 9)</option>
+          </select>
+        </div>
+        <div class="checkpoint-tabs" id="checkpoint-tabs"></div>
+        <div id="monitoring-fields"></div>
+        <button class="btn-primary" style="max-width:220px;" onclick="submitMonitoring()">💾 Simpan Catatan</button>
+      </div>
+    </section>
+
+    <!-- ============ FORM KONSULTASI ============ -->
+    <section id="tab-konsultasi-form" class="hidden">
+      <button class="btn-sm" onclick="switchTab('detail')">&larr; Kembali</button>
+      <div class="card">
+        <h3>Catatan Konsultasi</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Tanggal & Waktu</label><input type="datetime-local" id="kon-tanggal"></div>
+          <div class="form-group"><label>Pihak yang Hadir</label><input type="text" id="kon-pihak" placeholder="mis. Wali kelas, Orang tua"></div>
+          <div class="form-group full"><label>Permasalahan</label><textarea id="kon-permasalahan"></textarea></div>
+          <div class="form-group full"><label>Deskripsi Konsultasi</label><textarea id="kon-deskripsi"></textarea></div>
+          <div class="form-group full"><label>Saran Tindak Lanjut</label><textarea id="kon-saran"></textarea></div>
+        </div>
+        <button class="btn-primary" style="max-width:220px;" onclick="submitKonsultasi()">💾 Simpan</button>
+      </div>
+    </section>
+
+    <!-- ============ ADMIN ============ -->
+    <section id="tab-admin" class="hidden">
+      <div class="card">
+        <h3>Tambah Siswa Baru</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>NISN</label><input id="adm-nisn"></div>
+          <div class="form-group"><label>NIS</label><input id="adm-nis"></div>
+          <div class="form-group"><label>Nama</label><input id="adm-nama"></div>
+          <div class="form-group"><label>Kelas Saat Ini</label><input id="adm-kelas" placeholder="mis. 7A"></div>
+          <div class="form-group"><label>Tahun Ke-</label>
+            <select id="adm-tahunke"><option value="1">1 (Kelas 7)</option><option value="2">2 (Kelas 8)</option><option value="3">3 (Kelas 9)</option></select>
+          </div>
+          <div class="form-group"><label>Guru Wali</label><select id="adm-guruwali"></select></div>
+        </div>
+        <button class="btn-sm primary" onclick="submitAddSiswa()">+ Tambah Siswa</button>
+      </div>
+
+      <div class="card">
+        <h3>Kelola Guru / Guru Wali</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>NIP/NUPTK</label><input id="adm-guru-nip"></div>
+          <div class="form-group"><label>Nama Guru</label><input id="adm-guru-nama"></div>
+          <div class="form-group"><label>Username</label><input id="adm-guru-username"></div>
+          <div class="form-group"><label>Password</label><input id="adm-guru-password" placeholder="default: NIP/NUPTK"></div>
+          <div class="form-group"><label>Role</label>
+            <select id="adm-guru-role">
+              <option value="guru_wali">Guru Wali</option>
+              <option value="bk">Guru BK</option>
+              <option value="waka">Waka Kesiswaan</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-sm primary" onclick="submitAddGuru()">+ Tambah Guru</button>
+        <table style="margin-top:14px;">
+          <thead><tr><th>Nama</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody id="admin-guru-body"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Ubah Guru Wali Siswa</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Siswa</label><select id="adm-assign-siswa"></select></div>
+          <div class="form-group"><label>Guru Wali Baru</label><select id="adm-assign-guru"></select></div>
+        </div>
+        <button class="btn-sm primary" onclick="submitAssignGuruWali()">Simpan Penugasan</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="print-area"></div>
+<div id="toast-container"></div>
+
+<script>
+/* =====================================================
+   KONFIGURASI - GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
+===================================================== */
+const CONFIG = {
+  API_URL: 'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA'
+};
+
+let STATE = {
+  user: null,
+  siswaList: [],
+  guruList: [],
+  currentSiswa: null,
+  currentCheckpointIdx: 0
+};
+
+const CHECKPOINTS = [
+  'Identifikasi Awal (Juli)',
+  'Pendampingan Triwulan 1 (September)',
+  'Pendampingan Triwulan 2 (November)',
+  'Pendampingan Triwulan 3 (Januari)',
+  'Pendampingan Triwulan 4 (Maret)',
+  'Akhir Tahun (Mei/Juni)'
+];
+
+/* ---------------- API HELPER ---------------- */
+async function api(action, params = {}, method = 'GET') {
+  try {
+    let res;
+    if (method === 'GET') {
+      const qs = new URLSearchParams({ action, ...params }).toString();
+      res = await fetch(`${CONFIG.API_URL}?${qs}`);
+    } else {
+      res = await fetch(CONFIG.API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action, ...params })
+      });
+    }
+    return await res.json();
+  } catch (err) {
+    showToast('Gagal terhubung ke server. Cek koneksi / konfigurasi API_URL.');
+    return { success: false, message: err.message };
+  }
+}
+
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+/* ---------------- AUTH ---------------- */
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  if (!username || !password) {
+    document.getElementById('login-error').textContent = 'Isi username dan password.';
+    return;
+  }
+  const result = await api('login', { username, password }, 'POST');
+  if (result.success) {
+    STATE.user = result.user;
+    sessionStorage.setItem('gw_user', JSON.stringify(result.user));
+    initApp();
+  } else {
+    document.getElementById('login-error').textContent = result.message || 'Login gagal.';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('gw_user');
+  STATE.user = null;
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('view-login').style.display = 'flex';
+}
+
+function checkExistingSession() {
+  const saved = sessionStorage.getItem('gw_user');
+  if (saved) {
+    STATE.user = JSON.parse(saved);
+    initApp();
+  }
+}
+
+/* ---------------- APP INIT ---------------- */
+async function initApp() {
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+  document.getElementById('user-name-label').textContent = `${STATE.user.nama} (${roleLabel(STATE.user.role)})`;
+
+  if (STATE.user.role !== 'admin') {
+    document.getElementById('tab-admin-btn').style.display = 'none';
+  } else {
+    document.getElementById('tab-admin-btn').style.display = 'inline-block';
+  }
+
+  await loadDashboard();
+  await loadSiswaList();
+  if (STATE.user.role === 'admin') await loadGuruListAdmin();
+}
+
+function roleLabel(role) {
+  return { guru_wali: 'Guru Wali', bk: 'Guru BK', waka: 'Waka Kesiswaan', admin: 'Admin' }[role] || role;
+}
+
+/* ---------------- TABS ---------------- */
+function switchTab(tab) {
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('#main-tabs button').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`#main-tabs button[data-tab="${tab}"]`);
+  if (btn) btn.classList.add('active');
+}
+
+/* ---------------- DASHBOARD ---------------- */
+async function loadDashboard() {
+  const result = await api('getDashboard', { nip: STATE.user.nip, role: STATE.user.role });
+  if (!result.success) return;
+
+  document.getElementById('checkpoint-label').textContent = result.currentCheckpoint ? '- ' + result.currentCheckpoint : '';
+  document.getElementById('dashboard-stats').innerHTML = `
+    <div class="stat-card"><div class="num">${result.totalSiswa}</div><div class="lbl">Total Siswa Binaan</div></div>
+    <div class="stat-card warn"><div class="num">${result.belumChecklist}</div><div class="lbl">Belum Checklist Bulan Ini</div></div>
+    <div class="stat-card"><div class="num">${result.totalKonsultasiTahunIni}</div><div class="lbl">Catatan Konsultasi Tahun Ini</div></div>
+    <div class="stat-card"><div class="num">${result.tahunAjaran || '-'}</div><div class="lbl">Tahun Ajaran Aktif</div></div>
+  `;
+
+  const tbody = document.getElementById('dashboard-table-body');
+  if (result.siswa.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Belum ada siswa binaan.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = result.siswa.map(s => `
+    <tr>
+      <td>${s.nama}</td>
+      <td>${s.kelas}</td>
+      <td>${s.sudahChecklistBulanIni ? '<span class="pill ok">Sudah</span>' : '<span class="pill no">Belum</span>'}</td>
+      <td>${s.totalKonsultasi}</td>
+      <td><button class="btn-sm" onclick="openSiswaDetail('${s.nisn}')">Buka</button></td>
+    </tr>
+  `).join('');
+}
+
+/* ---------------- SISWA LIST ---------------- */
+async function loadSiswaList() {
+  const result = await api('getSiswaList', { nip: STATE.user.nip, role: STATE.user.role });
+  if (result.success) STATE.siswaList = result.data;
+  renderSiswaList();
+  populateSiswaSelects();
+}
+
+function renderSiswaList() {
+  const q = (document.getElementById('siswa-search').value || '').toLowerCase();
+  const filtered = STATE.siswaList.filter(s => String(s.Nama).toLowerCase().includes(q));
+  const tbody = document.getElementById('siswa-list-body');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">Tidak ada data siswa.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(s => `
+    <tr>
+      <td>${s.NISN}</td><td>${s.Nama}</td><td>${s.KelasSaatIni}</td>
+      <td><button class="btn-sm primary" onclick="openSiswaDetail('${s.NISN}')">Buka Jurnal</button></td>
+    </tr>
+  `).join('');
+}
+
+/* ---------------- DETAIL SISWA ---------------- */
+async function openSiswaDetail(nisn) {
+  const result = await api('getSiswaDetail', { nisn });
+  if (!result.success) { showToast(result.message); return; }
+  STATE.currentSiswa = result;
+  switchTab('detail');
+  document.getElementById('detail-nama-siswa').textContent = `${result.siswa.Nama} — Kelas ${result.siswa.KelasSaatIni}`;
+
+  document.getElementById('detail-biodata-ringkas').innerHTML = `
+    <div class="form-grid">
+      <div><b>NISN:</b> ${result.siswa.NISN}</div>
+      <div><b>NIS:</b> ${result.siswa.NIS}</div>
+      <div><b>TTL:</b> ${result.siswa.TempatLahir || '-'}, ${fmtDate(result.siswa.TglLahir)}</div>
+      <div><b>Nama Ayah:</b> ${result.siswa.NamaAyah || '-'}</div>
+      <div><b>Nama Ibu:</b> ${result.siswa.NamaIbu || '-'}</div>
+      <div><b>Cita-cita:</b> ${result.siswa.CitaCita || '-'}</div>
+    </div>`;
+
+  const monByYear = { 1: [], 2: [], 3: [] };
+  result.monitoring.forEach(m => { if (monByYear[m.TahunKe]) monByYear[m.TahunKe].push(m); });
+  document.getElementById('detail-monitoring-view').innerHTML = [1, 2, 3].map(tk => `
+    <div style="margin-bottom:10px;">
+      <div class="section-title">Tahun Ke-${tk}</div>
+      ${monByYear[tk].length === 0 ? '<div class="empty-state">Belum ada catatan.</div>' :
+        monByYear[tk].map(m => `
+          <div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;font-size:13px;">
+            <b>${m.Checkpoint}</b> — ${fmtDate(m.TglIsi)}<br>
+            <span style="color:var(--muted);">Akademik:</span> ${m.Akademik || '-'}<br>
+            <span style="color:var(--muted);">Karakter:</span> ${m.Karakter || '-'}<br>
+            <span style="color:var(--muted);">Saran:</span> ${m.SaranTindakLanjut || '-'}
+          </div>`).join('')}
+    </div>
+  `).join('');
+
+  document.getElementById('detail-konsultasi-body').innerHTML = result.konsultasi.length === 0
+    ? `<tr><td colspan="4" class="empty-state">Belum ada catatan konsultasi.</td></tr>`
+    : result.konsultasi.map(k => `
+      <tr>
+        <td>${fmtDate(k.TanggalWaktu)}</td><td>${k.Permasalahan}</td><td>${k.PihakHadir}</td>
+        <td><button class="btn-sm danger" onclick="hapusKonsultasi('${k.ID}')">Hapus</button></td>
+      </tr>`).join('');
+}
+
+function fmtDate(v) {
+  if (!v) return '-';
+  const d = new Date(v);
+  if (isNaN(d)) return v;
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+/* ---------------- BIODATA FORM ---------------- */
+const BIODATA_FIELDS = {
+  pribadi: [['Nama', 'Nama Lengkap'], ['JK', 'Jenis Kelamin (L/P)'], ['TempatLahir', 'Tempat Lahir'],
+    ['TglLahir', 'Tanggal Lahir', 'date'], ['Agama', 'Agama'], ['Alamat', 'Alamat'],
+    ['JarakKM', 'Jarak ke Sekolah (km)'], ['Transportasi', 'Transportasi'], ['KetTinggal', 'Tinggal Bersama']],
+  ortu: [['NamaAyah', 'Nama Ayah'], ['PekerjaanAyah', 'Pekerjaan Ayah'], ['AlamatAyah', 'Alamat Ayah'], ['HPAyah', 'HP Ayah'],
+    ['NamaIbu', 'Nama Ibu'], ['PekerjaanIbu', 'Pekerjaan Ibu'], ['AlamatIbu', 'Alamat Ibu'], ['HPIbu', 'HP Ibu'],
+    ['NamaWali', 'Nama Wali (jika ada)'], ['PekerjaanWali', 'Pekerjaan Wali'], ['AlamatWali', 'Alamat Wali'], ['HPWali', 'HP Wali']],
+  riwayat: [['RiwayatTK', 'TK'], ['RiwayatSD', 'SD'], ['SMPAsal', 'Asal SMP (jika pindahan)'],
+    ['PrestasiAkademik', 'Prestasi Akademik'], ['PrestasiNonAkademik', 'Prestasi Non Akademik'],
+    ['TinggiBadan', 'Tinggi Badan (cm)'], ['BeratBadan', 'Berat Badan (kg)'], ['GolDarah', 'Golongan Darah'],
+    ['RiwayatPenyakit', 'Riwayat Penyakit']],
+  hallain: [['Bakat', 'Bakat'], ['Hobi', 'Hobi'], ['CitaCita', 'Cita-cita'], ['Ekskul', 'Ekstrakurikuler'], ['Organisasi', 'Organisasi']]
+};
+
+function openBiodataForm() {
+  switchTab('biodata-form');
+  const s = STATE.currentSiswa.siswa;
+  Object.keys(BIODATA_FIELDS).forEach(group => {
+    const container = document.getElementById('biodata-' + group);
+    container.innerHTML = BIODATA_FIELDS[group].map(([key, label, type]) => `
+      <div class="form-group"><label>${label}</label>
+        <input type="${type || 'text'}" id="bf-${key}" value="${(s[key] || '').toString().replace(/"/g, '&quot;')}">
+      </div>`).join('');
+  });
+}
+
+async function submitBiodata() {
+  const params = { NISN: STATE.currentSiswa.siswa.NISN };
+  Object.values(BIODATA_FIELDS).flat().forEach(([key]) => {
+    params[key] = document.getElementById('bf-' + key).value;
+  });
+  const result = await api('saveBiodata', params, 'POST');
+  showToast(result.message);
+  if (result.success) { await openSiswaDetail(params.NISN); switchTab('detail'); }
+}
+
+/* ---------------- MONITORING FORM ---------------- */
+function openMonitoringPanel() {
+  switchTab('monitoring-form');
+  STATE.currentCheckpointIdx = 0;
+  renderCheckpointTabs();
+}
+
+function renderCheckpointTabs() {
+  const tahunKe = document.getElementById('mon-tahunke').value;
+  const filled = STATE.currentSiswa.monitoring.filter(m => String(m.TahunKe) === tahunKe).map(m => m.Checkpoint);
+  document.getElementById('checkpoint-tabs').innerHTML = CHECKPOINTS.map((c, i) => `
+    <button class="${i === STATE.currentCheckpointIdx ? 'active' : ''} ${filled.includes(c) ? 'filled' : ''}"
+      onclick="selectCheckpoint(${i})">${c}</button>
+  `).join('');
+  renderMonitoringFields();
+}
+
+function selectCheckpoint(i) {
+  STATE.currentCheckpointIdx = i;
+  renderCheckpointTabs();
+}
+
+function renderMonitoringFields() {
+  const tahunKe = document.getElementById('mon-tahunke').value;
+  const checkpoint = CHECKPOINTS[STATE.currentCheckpointIdx];
+  const existing = STATE.currentSiswa.monitoring.find(m => String(m.TahunKe) === tahunKe && m.Checkpoint === checkpoint) || {};
+  const isAwal = checkpoint === CHECKPOINTS[0];
+
+  let fields = isAwal
+    ? [['Akademik', 'Akademik'], ['RencanaKarir', 'Rencana Karir'], ['Karakter', 'Karakter'],
+       ['SosialEmosional', 'Sosial Emosional'], ['PotensiMinat', 'Potensi & Minat'], ['CatatanLain', 'Catatan Lain']]
+    : [['Akademik', 'Akademik'], ['Kompetensi', 'Kompetensi & Keterampilan'], ['Karakter', 'Karakter'], ['CatatanLain', 'Catatan Lain']];
+
+  document.getElementById('monitoring-fields').innerHTML = `
+    <fieldset><legend>${checkpoint}</legend>
+      ${fields.map(([key, label]) => `
+        <div class="form-group full"><label>${label}</label>
+          <textarea id="mf-${key}">${existing[key] || ''}</textarea>
+        </div>`).join('')}
+      <div class="form-group full"><label>Saran Tindak Lanjut</label>
+        <textarea id="mf-SaranTindakLanjut">${existing.SaranTindakLanjut || ''}</textarea>
+      </div>
+    </fieldset>`;
+}
+
+async function submitMonitoring() {
+  const tahunKe = document.getElementById('mon-tahunke').value;
+  const checkpoint = CHECKPOINTS[STATE.currentCheckpointIdx];
+  const isAwal = checkpoint === CHECKPOINTS[0];
+  const params = {
+    NISN: STATE.currentSiswa.siswa.NISN, TahunKe: tahunKe, Checkpoint: checkpoint,
+    DiisiOleh: STATE.user.nama,
+    Akademik: getVal('mf-Akademik'), Karakter: getVal('mf-Karakter'),
+    CatatanLain: getVal('mf-CatatanLain'), SaranTindakLanjut: getVal('mf-SaranTindakLanjut'),
+    RencanaKarir: isAwal ? getVal('mf-RencanaKarir') : '',
+    SosialEmosional: isAwal ? getVal('mf-SosialEmosional') : '',
+    PotensiMinat: isAwal ? getVal('mf-PotensiMinat') : '',
+    Kompetensi: !isAwal ? getVal('mf-Kompetensi') : ''
+  };
+  const result = await api('saveMonitoring', params, 'POST');
+  showToast(result.message);
+  if (result.success) {
+    const detail = await api('getSiswaDetail', { nisn: params.NISN });
+    STATE.currentSiswa = detail;
+    renderCheckpointTabs();
+  }
+}
+
+function getVal(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+/* ---------------- KONSULTASI FORM ---------------- */
+function openKonsultasiForm() {
+  switchTab('konsultasi-form');
+  ['kon-tanggal', 'kon-pihak', 'kon-permasalahan', 'kon-deskripsi', 'kon-saran'].forEach(id => document.getElementById(id).value = '');
+}
+
+async function submitKonsultasi() {
+  const params = {
+    NISN: STATE.currentSiswa.siswa.NISN,
+    TanggalWaktu: getVal('kon-tanggal') || new Date().toISOString(),
+    Permasalahan: getVal('kon-permasalahan'), PihakHadir: getVal('kon-pihak'),
+    DeskripsiKonsultasi: getVal('kon-deskripsi'), SaranTindakLanjut: getVal('kon-saran'),
+    DiisiOleh: STATE.user.nama
+  };
+  const result = await api('saveKonsultasi', params, 'POST');
+  showToast(result.message);
+  if (result.success) { await openSiswaDetail(params.NISN); switchTab('detail'); }
+}
+
+async function hapusKonsultasi(id) {
+  if (!confirm('Hapus catatan konsultasi ini?')) return;
+  const result = await api('deleteKonsultasi', { ID: id }, 'POST');
+  showToast(result.message);
+  if (result.success) openSiswaDetail(STATE.currentSiswa.siswa.NISN);
+}
+
+/* ---------------- CETAK JURNAL ---------------- */
+function renderPrintArea() {
+  const s = STATE.currentSiswa.siswa;
+  const monByYear = { 1: [], 2: [], 3: [] };
+  STATE.currentSiswa.monitoring.forEach(m => { if (monByYear[m.TahunKe]) monByYear[m.TahunKe].push(m); });
+
+  let html = `
+    <div class="print-page">
+      <h2>JURNAL PENDAMPINGAN GURU WALI</h2>
+      <p style="text-align:center;">SMPN 13 Bandarlampung</p>
+      <table>
+        <tr><td><b>Nama Murid</b></td><td>${s.Nama}</td><td><b>NISN</b></td><td>${s.NISN}</td></tr>
+        <tr><td><b>Kelas</b></td><td>${s.KelasSaatIni}</td><td><b>Guru Wali</b></td><td>${STATE.user.nama}</td></tr>
+        <tr><td><b>Tempat, Tgl Lahir</b></td><td>${s.TempatLahir || ''}, ${fmtDate(s.TglLahir)}</td><td><b>Agama</b></td><td>${s.Agama || ''}</td></tr>
+        <tr><td><b>Nama Ayah</b></td><td>${s.NamaAyah || ''}</td><td><b>Nama Ibu</b></td><td>${s.NamaIbu || ''}</td></tr>
+        <tr><td><b>Cita-cita</b></td><td>${s.CitaCita || ''}</td><td><b>Hobi</b></td><td>${s.Hobi || ''}</td></tr>
+      </table>
+    </div>`;
+
+  [1, 2, 3].forEach(tk => {
+    html += `<div class="print-page"><h4>TAHUN KE-${tk}</h4>`;
+    monByYear[tk].forEach(m => {
+      html += `<table>
+        <tr><th colspan="2">${m.Checkpoint} (diisi ${fmtDate(m.TglIsi)})</th></tr>
+        <tr><td width="30%">Akademik</td><td>${m.Akademik || '-'}</td></tr>
+        ${m.RencanaKarir ? `<tr><td>Rencana Karir</td><td>${m.RencanaKarir}</td></tr>` : ''}
+        ${m.Kompetensi ? `<tr><td>Kompetensi</td><td>${m.Kompetensi}</td></tr>` : ''}
+        <tr><td>Karakter</td><td>${m.Karakter || '-'}</td></tr>
+        ${m.SosialEmosional ? `<tr><td>Sosial Emosional</td><td>${m.SosialEmosional}</td></tr>` : ''}
+        ${m.PotensiMinat ? `<tr><td>Potensi & Minat</td><td>${m.PotensiMinat}</td></tr>` : ''}
+        <tr><td>Saran Tindak Lanjut</td><td>${m.SaranTindakLanjut || '-'}</td></tr>
+      </table>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `<div class="print-page"><h4>CATATAN KONSULTASI</h4><table>
+    <tr><th>Tanggal</th><th>Permasalahan</th><th>Pihak Hadir</th><th>Deskripsi</th><th>Saran</th></tr>
+    ${STATE.currentSiswa.konsultasi.map(k => `<tr><td>${fmtDate(k.TanggalWaktu)}</td><td>${k.Permasalahan}</td><td>${k.PihakHadir}</td><td>${k.DeskripsiKonsultasi}</td><td>${k.SaranTindakLanjut}</td></tr>`).join('')}
+  </table></div>`;
+
+  document.getElementById('print-area').innerHTML = html;
+}
+
+/* ---------------- ADMIN PANEL ---------------- */
+async function loadGuruListAdmin() {
+  const result = await api('getGuruList');
+  if (result.success) STATE.guruList = result.data;
+  document.getElementById('admin-guru-body').innerHTML = STATE.guruList.map(g => `
+    <tr><td>${g.Nama}</td><td>${g.Username}</td><td>${roleLabel(g.Role)}</td><td>${g.Status}</td>
+      <td><button class="btn-sm ${g.Status === 'aktif' ? 'danger' : 'primary'}" onclick="toggleGuruStatus('${g.NIP_NUPTK}','${g.Status}')">
+        ${g.Status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button></td></tr>
+  `).join('');
+  populateSiswaSelects();
+}
+
+function populateSiswaSelects() {
+  const guruWaliOnly = STATE.guruList.filter(g => g.Role === 'guru_wali' || g.Role === 'bk');
+  const guruOptions = guruWaliOnly.map(g => `<option value="${g.NIP_NUPTK}">${g.Nama}</option>`).join('');
+  const siswaOptions = STATE.siswaList.map(s => `<option value="${s.NISN}">${s.Nama}</option>`).join('');
+  ['adm-guruwali', 'adm-assign-guru'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = guruOptions; });
+  const assignSiswa = document.getElementById('adm-assign-siswa');
+  if (assignSiswa) assignSiswa.innerHTML = siswaOptions;
+}
+
+async function submitAddSiswa() {
+  const params = {
+    NISN: getVal('adm-nisn'), NIS: getVal('adm-nis'), Nama: getVal('adm-nama'),
+    KelasSaatIni: getVal('adm-kelas'), TahunKe: getVal('adm-tahunke'),
+    GuruWaliNIP: getVal('adm-guruwali'), Status: 'aktif'
+  };
+  const result = await api('addSiswa', params, 'POST');
+  showToast(result.message);
+  if (result.success) { ['adm-nisn', 'adm-nis', 'adm-nama', 'adm-kelas'].forEach(id => document.getElementById(id).value = ''); loadSiswaList(); }
+}
+
+async function submitAddGuru() {
+  const password = getVal('adm-guru-password') || getVal('adm-guru-nip');
+  const params = {
+    NIP_NUPTK: getVal('adm-guru-nip'), Nama: getVal('adm-guru-nama'),
+    Username: getVal('adm-guru-username'), Password: password, Role: getVal('adm-guru-role')
+  };
+  const result = await api('addGuru', params, 'POST');
+  showToast(result.message);
+  if (result.success) { ['adm-guru-nip', 'adm-guru-nama', 'adm-guru-username', 'adm-guru-password'].forEach(id => document.getElementById(id).value = ''); loadGuruListAdmin(); }
+}
+
+async function toggleGuruStatus(nip, currentStatus) {
+  const newStatus = currentStatus === 'aktif' ? 'nonaktif' : 'aktif';
+  const result = await api('updateGuru', { NIP_NUPTK: nip, Status: newStatus }, 'POST');
+  showToast(result.message);
+  if (result.success) loadGuruListAdmin();
+}
+
+async function submitAssignGuruWali() {
+  const params = { NISN: getVal('adm-assign-siswa'), GuruWaliNIP: getVal('adm-assign-guru') };
+  const result = await api('assignGuruWali', params, 'POST');
+  showToast(result.message);
+  if (result.success) loadSiswaList();
+}
+
+/* ---------------- START ---------------- */
+checkExistingSession();
+</script>
+</body>
+</html>
