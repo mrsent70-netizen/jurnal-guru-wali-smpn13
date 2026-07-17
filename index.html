@@ -4,75 +4,97 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jurnal Guru Wali - SMPN 13 Bandarlampung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#1e3a5f; --navy-dark:#152a45; --accent:#2f80ed; --accent2:#27ae60;
-    --bg:#f4f6f9; --card:#ffffff; --border:#e1e6ec; --text:#26313f; --muted:#7a8899;
-    --warn:#e2933c; --danger:#e0554f;
-    --radius:12px;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    /* Palet: navy tua + emas (brass), di atas kertas hangat -- nuansa jurnal/ledger resmi */
+    --navy:#16263D; --navy-dark:#0C1826; --navy-mid:#24405F;
+    --gold:#B8924A; --gold-deep:#96742F; --gold-soft:#E7D8B8;
+    --paper:#FAF7F0; --card:#FFFFFF; --border:#E7E1D2;
+    --ink:#262420; --muted:#7C7666;
+    --sage:#4F6B58; --sage-bg:#E7EFE7;
+    --brick:#9C4A3D; --brick-bg:#F6E8E5;
+    --radius:10px;
+    --font-display:'Fraunces',Georgia,serif;
+    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-family:var(--font-body);
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);}
+  body{margin:0;background:var(--paper);color:var(--ink);}
   .hidden{display:none !important;}
   button{cursor:pointer;font-family:inherit;}
   input,select,textarea{font-family:inherit;font-size:14px;}
+  h1,h2,h3{font-family:var(--font-display);}
 
   /* ---------- LOGIN ---------- */
   #view-login{min-height:100vh;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);padding:16px;}
-  .login-card{background:var(--card);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;
-    box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;}
-  .login-card h1{font-size:18px;margin:14px 0 2px;color:var(--navy);}
-  .login-card p.sub{color:var(--muted);font-size:13px;margin:0 0 24px;}
+    background:
+      radial-gradient(circle at 20% 20%, rgba(184,146,74,.14), transparent 45%),
+      linear-gradient(155deg,var(--navy) 0%,var(--navy-dark) 100%);
+    padding:16px;}
+  .login-card{background:var(--card);border-radius:14px;padding:0 32px 32px;width:100%;max-width:380px;
+    box-shadow:0 25px 70px rgba(0,0,0,.35);text-align:center;overflow:hidden;}
+  .login-card::before{content:'';display:block;height:5px;margin:0 -32px 30px;
+    background:linear-gradient(90deg,var(--gold-deep),var(--gold) 50%,var(--gold-deep));}
+  .login-card h1{font-size:21px;margin:14px 0 2px;color:var(--navy);font-weight:600;letter-spacing:.2px;}
+  .login-card p.sub{color:var(--muted);font-size:12.5px;margin:0 0 26px;text-transform:uppercase;letter-spacing:1.2px;}
   .login-card input{width:100%;padding:12px 14px;margin-bottom:12px;border:1.5px solid var(--border);
-    border-radius:10px;font-size:15px;}
-  .login-card input:focus{outline:none;border-color:var(--accent);}
-  .btn-primary{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;
-    font-size:15px;font-weight:600;}
-  .btn-primary:hover{background:#2569c9;}
-  #login-error{color:var(--danger);font-size:13px;margin-top:10px;min-height:16px;}
-  .logo-circle{width:56px;height:56px;border-radius:50%;background:var(--navy);color:#fff;
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin:0 auto;}
+    border-radius:8px;font-size:15px;background:var(--paper);}
+  .login-card input:focus{outline:none;border-color:var(--gold);background:#fff;}
+  .btn-primary{width:100%;padding:12px;background:var(--gold);color:var(--navy-dark);border:none;border-radius:8px;
+    font-size:14.5px;font-weight:700;letter-spacing:.3px;transition:background .15s;}
+  .btn-primary:hover{background:var(--gold-deep);color:#fff;}
+  #login-error{color:var(--brick);font-size:13px;margin-top:10px;min-height:16px;}
+  .logo-circle{width:54px;height:54px;border-radius:50%;background:var(--navy);color:var(--gold-soft);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;margin:0 auto;
+    font-family:var(--font-display);border:2px solid var(--gold);}
 
   /* ---------- LAYOUT ---------- */
   #app-shell{display:none;min-height:100vh;flex-direction:column;}
-  header.topbar{background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;
-    justify-content:space-between;position:sticky;top:0;z-index:20;}
-  header.topbar .title{font-weight:700;font-size:15px;}
-  header.topbar .user-box{display:flex;align-items:center;gap:10px;font-size:13px;}
-  header.topbar button.logout{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;
-    padding:6px 12px;border-radius:8px;font-size:12px;}
-  nav.tabs{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--border);padding:0 12px;
+  header.topbar{background:var(--navy-dark);color:#fff;padding:14px 20px;display:flex;align-items:center;
+    justify-content:space-between;position:sticky;top:0;z-index:20;border-bottom:2px solid var(--gold);}
+  header.topbar .title{font-weight:600;font-size:16px;font-family:var(--font-display);letter-spacing:.3px;}
+  header.topbar .user-box{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--gold-soft);}
+  header.topbar button.logout{background:transparent;border:1px solid rgba(231,216,184,.45);color:#fff;
+    padding:6px 13px;border-radius:7px;font-size:12px;}
+  header.topbar button.logout:hover{border-color:var(--gold);color:var(--gold-soft);}
+  nav.tabs{display:flex;gap:4px;background:var(--card);border-bottom:1px solid var(--border);padding:0 14px;
     overflow-x:auto;}
-  nav.tabs button{background:transparent;border:none;padding:12px 14px;font-size:13.5px;font-weight:600;
-    color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;}
-  nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent);}
+  nav.tabs button{background:transparent;border:none;padding:13px 15px;font-size:13.5px;font-weight:600;
+    color:var(--muted);border-bottom:2.5px solid transparent;white-space:nowrap;}
+  nav.tabs button.active{color:var(--navy);border-bottom-color:var(--gold);}
   main{flex:1;padding:16px;max-width:1100px;margin:0 auto;width:100%;}
 
   /* ---------- CARDS / DASHBOARD ---------- */
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px;}
-  .stat-card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);}
-  .stat-card .num{font-size:26px;font-weight:800;color:var(--navy);}
-  .stat-card .lbl{font-size:12.5px;color:var(--muted);margin-top:2px;}
-  .stat-card.warn .num{color:var(--warn);}
+  .stat-card{background:var(--card);border-radius:var(--radius);padding:16px 18px;border:1px solid var(--border);
+    border-left:3px solid var(--gold);}
+  .stat-card .num{font-size:27px;font-weight:700;color:var(--navy);font-family:var(--font-display);}
+  .stat-card .lbl{font-size:12px;color:var(--muted);margin-top:3px;}
+  .stat-card.warn{border-left-color:var(--brick);}
+  .stat-card.warn .num{color:var(--brick);}
 
-  .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:14px;}
-  .card h3{margin:0 0 12px;font-size:15px;color:var(--navy);}
+  .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:18px;margin-bottom:14px;}
+  .card h3{margin:0 0 14px;font-size:16px;color:var(--navy);font-weight:600;}
 
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
-  th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--border);}
-  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
-  tr:hover td{background:#f8fafc;}
-  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
-  .pill.ok{background:#e5f7ec;color:#1d8a4c;}
-  .pill.no{background:#fdecea;color:#c0392b;}
+  th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+    border-bottom:1.5px solid var(--gold-soft);}
+  tr:hover td{background:#faf7ee;}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .pill.ok{background:var(--sage-bg);color:var(--sage);}
+  .pill.no{background:var(--brick-bg);color:var(--brick);}
   .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
-  .btn-sm{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:12.5px;font-weight:600;color:var(--navy);}
-  .btn-sm.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
-  .btn-sm.danger{background:#fff;color:var(--danger);border-color:#f3c6c3;}
+  .btn-sm{padding:7px 13px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:12.5px;font-weight:600;color:var(--navy);}
+  .btn-sm:hover{border-color:var(--navy-mid);}
+  .btn-sm.primary{background:var(--gold);color:var(--navy-dark);border-color:var(--gold);}
+  .btn-sm.primary:hover{background:var(--gold-deep);color:#fff;}
+  .btn-sm.danger{background:#fff;color:var(--brick);border-color:#e6c9c3;}
 
-  input.search{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:12px;font-size:14px;}
+  input.search{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:12px;font-size:14px;}
 
   /* ---------- FORMS ---------- */
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -81,18 +103,21 @@
   .form-group.full{grid-column:1/-1;}
   .form-group label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:4px;}
   .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);
-    border-radius:8px;}
+    border-radius:7px;background:var(--paper);}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--gold);background:#fff;}
   .form-group textarea{min-height:70px;resize:vertical;}
-  fieldset{border:1.5px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;}
-  fieldset legend{font-weight:700;color:var(--navy);padding:0 6px;font-size:13.5px;}
+  fieldset{border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+  fieldset legend{font-weight:600;color:var(--navy);padding:0 8px;font-size:13.5px;font-family:var(--font-display);}
 
-  .section-title{font-weight:700;color:var(--navy);margin:18px 0 8px;font-size:14.5px;border-left:4px solid var(--accent);padding-left:8px;}
+  .section-title{font-weight:600;color:var(--navy);margin:20px 0 10px;font-size:14.5px;border-left:3px solid var(--gold);
+    padding-left:9px;font-family:var(--font-display);}
 
   /* checkpoint chips */
   .checkpoint-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-  .checkpoint-tabs button{padding:7px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;}
+  .checkpoint-tabs button{padding:7px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--muted);}
   .checkpoint-tabs button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
-  .checkpoint-tabs button.filled::after{content:" ✓";color:var(--accent2);}
+  .checkpoint-tabs button.filled::after{content:" ✓";color:var(--sage);}
+  .checkpoint-tabs button.active.filled::after{color:var(--gold-soft);}
 
   /* print */
   #print-area{display:none;}
@@ -104,11 +129,12 @@
   }
   .print-page{page-break-after:always;padding:10px 0;}
   .print-page table{margin-bottom:14px;}
-  .print-page h2{text-align:center;color:var(--navy);}
-  .print-page h4{background:#eef3fa;padding:6px 10px;border-radius:6px;color:var(--navy);}
+  .print-page h2{text-align:center;color:var(--navy);font-family:var(--font-display);}
+  .print-page h4{background:var(--gold-soft);padding:7px 11px;border-radius:6px;color:var(--navy-dark);font-family:var(--font-display);}
 
-  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;
-    padding:10px 20px;border-radius:10px;font-size:13.5px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy-dark);color:#fff;
+    padding:11px 22px;border-radius:9px;font-size:13.5px;z-index:100;box-shadow:0 10px 28px rgba(0,0,0,.3);
+    border-bottom:2px solid var(--gold);}
   .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13.5px;}
 </style>
 </head>
@@ -256,10 +282,12 @@
           <div class="form-group"><label>NISN</label><input id="adm-nisn"></div>
           <div class="form-group"><label>NIS</label><input id="adm-nis"></div>
           <div class="form-group"><label>Nama</label><input id="adm-nama"></div>
-          <div class="form-group"><label>Kelas Saat Ini</label><input id="adm-kelas" placeholder="mis. 7A"></div>
           <div class="form-group"><label>Tahun Ke-</label>
-            <select id="adm-tahunke"><option value="1">1 (Kelas 7)</option><option value="2">2 (Kelas 8)</option><option value="3">3 (Kelas 9)</option></select>
+            <select id="adm-tahunke" onchange="updateKelasOptions()">
+              <option value="1">1 (Kelas 7)</option><option value="2">2 (Kelas 8)</option><option value="3">3 (Kelas 9)</option>
+            </select>
           </div>
+          <div class="form-group"><label>Kelas Saat Ini</label><select id="adm-kelas"></select></div>
           <div class="form-group"><label>Guru Wali</label><select id="adm-guruwali"></select></div>
         </div>
         <button class="btn-sm primary" onclick="submitAddSiswa()">+ Tambah Siswa</button>
@@ -308,7 +336,7 @@
    KONFIGURASI - GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
 ===================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycby5xBdzGMaDxmj2n1DdaJ7Ythb_4Eaa3_U9hTlZb0XoPS4hgq1TxfY4YDcv7_-zeBkIyw/exec'
+  API_URL: 'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA'
 };
 
 let STATE = {
@@ -327,6 +355,27 @@ const CHECKPOINTS = [
   'Pendampingan Triwulan 4 (Maret)',
   'Akhir Tahun (Mei/Juni)'
 ];
+
+// Struktur kelas SMPN 13 Bandarlampung: Kelas 7 (7.1-7.9), Kelas 8 (8.1-8.11), Kelas 9 (9.1-9.10)
+const KELAS_MAP = {
+  '1': { tingkat: 7, jumlah: 9 },
+  '2': { tingkat: 8, jumlah: 11 },
+  '3': { tingkat: 9, jumlah: 10 }
+};
+
+function getKelasOptions(tahunKe) {
+  const info = KELAS_MAP[String(tahunKe)];
+  if (!info) return [];
+  const list = [];
+  for (let i = 1; i <= info.jumlah; i++) list.push(`${info.tingkat}.${i}`);
+  return list;
+}
+
+function updateKelasOptions() {
+  const tahunKe = document.getElementById('adm-tahunke').value;
+  const options = getKelasOptions(tahunKe);
+  document.getElementById('adm-kelas').innerHTML = options.map(k => `<option value="${k}">${k}</option>`).join('');
+}
 
 /* ---------------- API HELPER ---------------- */
 async function api(action, params = {}, method = 'GET') {
@@ -417,6 +466,7 @@ function switchTab(tab) {
   document.querySelectorAll('#main-tabs button').forEach(b => b.classList.remove('active'));
   const btn = document.querySelector(`#main-tabs button[data-tab="${tab}"]`);
   if (btn) btn.classList.add('active');
+  if (tab === 'admin') updateKelasOptions();
 }
 
 /* ---------------- DASHBOARD ---------------- */
@@ -728,7 +778,7 @@ async function submitAddSiswa() {
   };
   const result = await api('addSiswa', params, 'POST');
   showToast(result.message);
-  if (result.success) { ['adm-nisn', 'adm-nis', 'adm-nama', 'adm-kelas'].forEach(id => document.getElementById(id).value = ''); loadSiswaList(); }
+  if (result.success) { ['adm-nisn', 'adm-nis', 'adm-nama'].forEach(id => document.getElementById(id).value = ''); updateKelasOptions(); loadSiswaList(); }
 }
 
 async function submitAddGuru() {
