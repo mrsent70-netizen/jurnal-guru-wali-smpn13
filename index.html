@@ -122,15 +122,51 @@
   /* print */
   #print-area{display:none;}
   @media print{
+    @page{size:A4;margin:16mm 14mm;}
     body *{visibility:hidden;}
     #print-area, #print-area *{visibility:visible;}
-    #print-area{display:block !important;position:absolute;top:0;left:0;width:100%;padding:20px;}
+    #print-area{display:block !important;position:absolute;top:0;left:0;width:100%;padding:0;}
     .no-print{display:none !important;}
+    .print-page{page-break-after:always;}
+    .print-page:last-child{page-break-after:auto;}
+    table{page-break-inside:auto;}
+    tr{page-break-inside:avoid;}
+    thead{display:table-header-group;}
   }
-  .print-page{page-break-after:always;padding:10px 0;}
-  .print-page table{margin-bottom:14px;}
-  .print-page h2{text-align:center;color:var(--navy);font-family:var(--font-display);}
-  .print-page h4{background:var(--gold-soft);padding:7px 11px;border-radius:6px;color:var(--navy-dark);font-family:var(--font-display);}
+  .print-page{padding:14px 4px;}
+  .print-page table{margin-bottom:14px;border:1px solid var(--border);}
+  .print-page table th{background:#f4efe2;}
+  .print-page h2{text-align:center;color:var(--navy);font-family:var(--font-display);margin-bottom:2px;}
+  .print-page h4{background:var(--gold-soft);padding:8px 12px;border-radius:6px;color:var(--navy-dark);
+    font-family:var(--font-display);font-size:15px;letter-spacing:.3px;}
+  .print-footer-note{font-size:10.5px;color:var(--muted);text-align:center;margin-top:6px;}
+
+  /* ---- Halaman Cover ---- */
+  .cover-page{min-height:255mm;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;position:relative;border:2.5px solid var(--navy);padding:40px 30px;}
+  .cover-page::before{content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;
+    border:1px solid var(--gold);pointer-events:none;}
+  .cover-crest{width:96px;height:96px;border-radius:50%;border:3px solid var(--gold);
+    background:var(--navy);color:var(--gold-soft);display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:22px;line-height:1.15;}
+  .cover-eyebrow{letter-spacing:3px;font-size:12px;color:var(--gold-deep);text-transform:uppercase;
+    font-weight:700;margin-bottom:10px;}
+  .cover-title{font-family:var(--font-display);font-size:30px;color:var(--navy);font-weight:700;
+    margin:0 0 6px;line-height:1.25;}
+  .cover-school{font-size:14px;color:var(--ink);margin-bottom:4px;font-weight:600;}
+  .cover-address{font-size:11px;color:var(--muted);margin-bottom:36px;}
+  .cover-divider{width:70px;height:2px;background:var(--gold);margin:0 auto 36px;}
+  .cover-info{width:100%;max-width:380px;text-align:left;font-size:14px;}
+  .cover-info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dotted var(--border);}
+  .cover-info-row span:first-child{color:var(--muted);}
+  .cover-info-row span:last-child{font-weight:700;color:var(--navy);}
+  .cover-years{margin-top:36px;font-size:11px;color:var(--muted);letter-spacing:.5px;}
+
+  /* ---- Blok tanda tangan ---- */
+  .signature-block{display:flex;justify-content:space-between;margin-top:26px;gap:20px;}
+  .signature-item{flex:1;text-align:center;font-size:12.5px;}
+  .signature-item .sig-space{height:60px;}
+  .signature-item .sig-name{border-top:1px solid var(--ink);display:inline-block;padding-top:4px;margin-top:2px;font-weight:600;}
 
   .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy-dark);color:#fff;
     padding:11px 22px;border-radius:9px;font-size:13.5px;z-index:100;box-shadow:0 10px 28px rgba(0,0,0,.3);
@@ -336,7 +372,7 @@
    KONFIGURASI - GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
 ===================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbxR5YX9sV-aRX_js6lfPPvO4pGVUa5HNziajbZKjs70hAO6s5nKayNZLcRbMN5hUptN/exec'
+  API_URL: 'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA'
 };
 
 let STATE = {
@@ -710,41 +746,110 @@ function renderPrintArea() {
   const s = STATE.currentSiswa.siswa;
   const monByYear = { 1: [], 2: [], 3: [] };
   STATE.currentSiswa.monitoring.forEach(m => { if (monByYear[m.TahunKe]) monByYear[m.TahunKe].push(m); });
+  const tahunMasuk = parseInt(s.TahunMasuk) || new Date().getFullYear();
+  const rentangTahun = `${tahunMasuk}/${tahunMasuk+1} — ${tahunMasuk+2}/${tahunMasuk+3}`;
 
+  // ===== HALAMAN 1: COVER =====
   let html = `
-    <div class="print-page">
-      <h2>JURNAL PENDAMPINGAN GURU WALI</h2>
-      <p style="text-align:center;">SMPN 13 Bandarlampung</p>
-      <table>
-        <tr><td><b>Nama Murid</b></td><td>${s.Nama}</td><td><b>NISN</b></td><td>${s.NISN}</td></tr>
-        <tr><td><b>Kelas</b></td><td>${s.KelasSaatIni}</td><td><b>Guru Wali</b></td><td>${STATE.user.nama}</td></tr>
-        <tr><td><b>Tempat, Tgl Lahir</b></td><td>${s.TempatLahir || ''}, ${fmtDate(s.TglLahir)}</td><td><b>Agama</b></td><td>${s.Agama || ''}</td></tr>
-        <tr><td><b>Nama Ayah</b></td><td>${s.NamaAyah || ''}</td><td><b>Nama Ibu</b></td><td>${s.NamaIbu || ''}</td></tr>
-        <tr><td><b>Cita-cita</b></td><td>${s.CitaCita || ''}</td><td><b>Hobi</b></td><td>${s.Hobi || ''}</td></tr>
-      </table>
+    <div class="print-page cover-page">
+      <div class="cover-crest">GW</div>
+      <div class="cover-eyebrow">Dokumen Resmi Pembinaan Murid</div>
+      <div class="cover-title">Jurnal Pendampingan<br>Guru Wali</div>
+      <div class="cover-school">SMP NEGERI 13 BANDAR LAMPUNG</div>
+      <div class="cover-address">Bandar Lampung, Provinsi Lampung</div>
+      <div class="cover-divider"></div>
+      <div class="cover-info">
+        <div class="cover-info-row"><span>Nama Murid</span><span>${s.Nama}</span></div>
+        <div class="cover-info-row"><span>NISN</span><span>${s.NISN}</span></div>
+        <div class="cover-info-row"><span>Kelas Saat Ini</span><span>${s.KelasSaatIni}</span></div>
+        <div class="cover-info-row"><span>Guru Wali</span><span>${STATE.user.nama}</span></div>
+      </div>
+      <div class="cover-years">TAHUN PELAJARAN ${rentangTahun}</div>
     </div>`;
 
+  // ===== HALAMAN 2: BIODATA LENGKAP =====
+  html += `
+    <div class="print-page">
+      <h2>A. Biodata Murid</h2>
+      <p class="print-footer-note" style="margin-bottom:14px;">Kelas ${s.KelasSaatIni} — Tahun Pelajaran ${rentangTahun.split('—')[0].trim()}</p>
+      <table>
+        <tr><th colspan="4">Data Pribadi</th></tr>
+        <tr><td width="22%">Nama Lengkap</td><td width="28%">${s.Nama}</td><td width="22%">Jenis Kelamin</td><td>${s.JK === 'L' ? 'Laki-laki' : s.JK === 'P' ? 'Perempuan' : (s.JK||'-')}</td></tr>
+        <tr><td>NISN</td><td>${s.NISN}</td><td>NIS</td><td>${s.NIS}</td></tr>
+        <tr><td>Tempat, Tgl Lahir</td><td>${s.TempatLahir || '-'}, ${fmtDate(s.TglLahir)}</td><td>Agama</td><td>${s.Agama || '-'}</td></tr>
+        <tr><td>Alamat</td><td colspan="3">${s.Alamat || '-'}</td></tr>
+        <tr><td>Jarak ke Sekolah</td><td>${s.JarakKM || '-'} km</td><td>Transportasi</td><td>${s.Transportasi || '-'}</td></tr>
+        <tr><td>Tinggal Bersama</td><td colspan="3">${s.KetTinggal || '-'}</td></tr>
+      </table>
+      <table>
+        <tr><th colspan="4">Data Orang Tua / Wali</th></tr>
+        <tr><td width="22%">Nama Ayah</td><td width="28%">${s.NamaAyah || '-'}</td><td width="22%">Pekerjaan</td><td>${s.PekerjaanAyah || '-'}</td></tr>
+        <tr><td>HP Ayah</td><td colspan="3">${s.HPAyah || '-'}</td></tr>
+        <tr><td>Nama Ibu</td><td>${s.NamaIbu || '-'}</td><td>Pekerjaan</td><td>${s.PekerjaanIbu || '-'}</td></tr>
+        <tr><td>HP Ibu</td><td colspan="3">${s.HPIbu || '-'}</td></tr>
+        ${s.NamaWali ? `<tr><td>Nama Wali</td><td>${s.NamaWali}</td><td>Pekerjaan</td><td>${s.PekerjaanWali || '-'}</td></tr>` : ''}
+      </table>
+      <table>
+        <tr><th colspan="4">Riwayat Pendidikan, Kesehatan & Hal Lain</th></tr>
+        <tr><td width="22%">TK</td><td width="28%">${s.RiwayatTK || '-'}</td><td width="22%">SD</td><td>${s.RiwayatSD || '-'}</td></tr>
+        <tr><td>Prestasi Akademik</td><td colspan="3">${s.PrestasiAkademik || '-'}</td></tr>
+        <tr><td>Prestasi Non Akademik</td><td colspan="3">${s.PrestasiNonAkademik || '-'}</td></tr>
+        <tr><td>TB / BB / Gol. Darah</td><td>${s.TinggiBadan||'-'} cm / ${s.BeratBadan||'-'} kg / ${s.GolDarah||'-'}</td><td>Riwayat Penyakit</td><td>${s.RiwayatPenyakit || '-'}</td></tr>
+        <tr><td>Bakat / Hobi</td><td>${s.Bakat||'-'} / ${s.Hobi||'-'}</td><td>Cita-cita</td><td>${s.CitaCita || '-'}</td></tr>
+        <tr><td>Ekstrakurikuler</td><td>${s.Ekskul || '-'}</td><td>Organisasi</td><td>${s.Organisasi || '-'}</td></tr>
+      </table>
+      <div class="signature-block">
+        <div class="signature-item"><div class="sig-space"></div><span class="sig-name">Orang Tua / Wali</span></div>
+        <div class="signature-item"><div class="sig-space"></div><span class="sig-name">${s.Nama}</span><br><span style="font-size:11px;color:var(--muted);">Murid</span></div>
+        <div class="signature-item"><div class="sig-space"></div><span class="sig-name">${STATE.user.nama}</span><br><span style="font-size:11px;color:var(--muted);">Guru Wali</span></div>
+      </div>
+    </div>`;
+
+  // ===== HALAMAN CATATAN PENDAMPINGAN PER TAHUN =====
   [1, 2, 3].forEach(tk => {
-    html += `<div class="print-page"><h4>TAHUN KE-${tk}</h4>`;
+    const tingkat = 6 + tk; // 7,8,9
+    html += `<div class="print-page"><h4>B. Catatan Pendampingan — Tahun Ke-${tk} (Kelas ${tingkat})</h4>`;
+    if (monByYear[tk].length === 0) {
+      html += `<p class="empty-state">Belum ada catatan untuk tahun ini.</p>`;
+    }
     monByYear[tk].forEach(m => {
       html += `<table>
-        <tr><th colspan="2">${m.Checkpoint} (diisi ${fmtDate(m.TglIsi)})</th></tr>
-        <tr><td width="30%">Akademik</td><td>${m.Akademik || '-'}</td></tr>
+        <tr><th colspan="2">${m.Checkpoint} — diisi ${fmtDate(m.TglIsi)} oleh ${m.DiisiOleh || '-'}</th></tr>
+        <tr><td width="28%">Akademik</td><td>${m.Akademik || '-'}</td></tr>
         ${m.RencanaKarir ? `<tr><td>Rencana Karir</td><td>${m.RencanaKarir}</td></tr>` : ''}
-        ${m.Kompetensi ? `<tr><td>Kompetensi</td><td>${m.Kompetensi}</td></tr>` : ''}
+        ${m.Kompetensi ? `<tr><td>Kompetensi & Keterampilan</td><td>${m.Kompetensi}</td></tr>` : ''}
         <tr><td>Karakter</td><td>${m.Karakter || '-'}</td></tr>
         ${m.SosialEmosional ? `<tr><td>Sosial Emosional</td><td>${m.SosialEmosional}</td></tr>` : ''}
         ${m.PotensiMinat ? `<tr><td>Potensi & Minat</td><td>${m.PotensiMinat}</td></tr>` : ''}
+        ${m.CatatanLain && m.CatatanLain !== '-' ? `<tr><td>Catatan Lain</td><td>${m.CatatanLain}</td></tr>` : ''}
         <tr><td>Saran Tindak Lanjut</td><td>${m.SaranTindakLanjut || '-'}</td></tr>
       </table>`;
     });
     html += `</div>`;
   });
 
-  html += `<div class="print-page"><h4>CATATAN KONSULTASI</h4><table>
-    <tr><th>Tanggal</th><th>Permasalahan</th><th>Pihak Hadir</th><th>Deskripsi</th><th>Saran</th></tr>
-    ${STATE.currentSiswa.konsultasi.map(k => `<tr><td>${fmtDate(k.TanggalWaktu)}</td><td>${k.Permasalahan}</td><td>${k.PihakHadir}</td><td>${k.DeskripsiKonsultasi}</td><td>${k.SaranTindakLanjut}</td></tr>`).join('')}
-  </table></div>`;
+  // ===== HALAMAN KONSULTASI =====
+  html += `<div class="print-page"><h4>C. Catatan Konsultasi</h4>`;
+  if (STATE.currentSiswa.konsultasi.length === 0) {
+    html += `<p class="empty-state">Belum ada catatan konsultasi.</p>`;
+  } else {
+    html += `<table>
+      <thead><tr><th>Tanggal</th><th>Permasalahan</th><th>Pihak Hadir</th><th>Deskripsi</th><th>Saran</th></tr></thead>
+      <tbody>${STATE.currentSiswa.konsultasi.map(k => `<tr><td>${fmtDate(k.TanggalWaktu)}</td><td>${k.Permasalahan}</td><td>${k.PihakHadir}</td><td>${k.DeskripsiKonsultasi}</td><td>${k.SaranTindakLanjut}</td></tr>`).join('')}</tbody>
+    </table>`;
+  }
+  html += `
+    <div class="signature-block" style="margin-top:50px;">
+      <div class="signature-item"></div>
+      <div class="signature-item"></div>
+      <div class="signature-item">
+        <span style="font-size:11px;color:var(--muted);">Bandar Lampung, ${new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})}</span>
+        <div class="sig-space"></div>
+        <span class="sig-name">${STATE.user.nama}</span><br>
+        <span style="font-size:11px;color:var(--muted);">Guru Wali</span>
+      </div>
+    </div>
+  </div>`;
 
   document.getElementById('print-area').innerHTML = html;
 }
