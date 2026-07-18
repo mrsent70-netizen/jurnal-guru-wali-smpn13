@@ -158,10 +158,11 @@
   .cover-school{font-size:14px;color:var(--ink);margin-bottom:4px;font-weight:600;}
   .cover-address{font-size:11px;color:var(--muted);margin-bottom:36px;}
   .cover-divider{width:70px;height:2px;background:var(--gold);margin:0 auto 36px;}
-  .cover-info{width:100%;max-width:380px;text-align:left;font-size:14px;}
-  .cover-info-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dotted var(--border);}
-  .cover-info-row span:first-child{color:var(--muted);}
-  .cover-info-row span:last-child{font-weight:700;color:var(--navy);}
+  .cover-info{width:100%;max-width:420px;text-align:left;font-size:13.5px;}
+  .cover-info-row{display:flex;padding:7px 0;}
+  .cover-info-row .ci-label{width:150px;flex-shrink:0;color:var(--ink);text-transform:uppercase;letter-spacing:.4px;font-size:12.5px;}
+  .cover-info-row .ci-colon{width:16px;flex-shrink:0;color:var(--ink);}
+  .cover-info-row .ci-value{font-weight:700;color:var(--navy);}
   .cover-years{margin-top:36px;font-size:11px;color:var(--muted);letter-spacing:.5px;}
 
   /* ---- Blok tanda tangan ---- */
@@ -377,7 +378,7 @@
    KONFIGURASI - GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
 ===================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbxR5YX9sV-aRX_js6lfPPvO4pGVUa5HNziajbZKjs70hAO6s5nKayNZLcRbMN5hUptN/exec'
+  API_URL: 'GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA'
 };
 
 // Logo resmi Tut Wuri Handayani (dipakai di login & cover cetak jurnal)
@@ -767,10 +768,10 @@ function renderPrintArea() {
       <div class="cover-address">Bandar Lampung, Provinsi Lampung</div>
       <div class="cover-divider"></div>
       <div class="cover-info">
-        <div class="cover-info-row"><span>Nama Murid</span><span>${s.Nama}</span></div>
-        <div class="cover-info-row"><span>NISN</span><span>${s.NISN}</span></div>
-        <div class="cover-info-row"><span>Kelas Saat Ini</span><span>${s.KelasSaatIni}</span></div>
-        <div class="cover-info-row"><span>Guru Wali</span><span>${STATE.user.nama}</span></div>
+        <div class="cover-info-row"><span class="ci-label">Nama Murid</span><span class="ci-colon">:</span><span class="ci-value">${s.Nama}</span></div>
+        <div class="cover-info-row"><span class="ci-label">NISN</span><span class="ci-colon">:</span><span class="ci-value">${s.NISN}</span></div>
+        <div class="cover-info-row"><span class="ci-label">Kelas Saat Ini</span><span class="ci-colon">:</span><span class="ci-value">${s.KelasSaatIni}</span></div>
+        <div class="cover-info-row"><span class="ci-label">Guru Wali</span><span class="ci-colon">:</span><span class="ci-value">${STATE.user.nama}</span></div>
       </div>
       <div class="cover-years">TAHUN PELAJARAN ${rentangTahun}</div>
     </div>`;
