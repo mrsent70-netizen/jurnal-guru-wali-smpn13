@@ -779,9 +779,11 @@ async function submitMonitoring() {
   const result = await api('saveMonitoring', params, 'POST');
   showToast(result.message);
   if (result.success) {
-    const detail = await api('getSiswaDetail', { nisn: params.NISN });
-    STATE.currentSiswa = detail;
-    renderCheckpointTabs();
+    const detail = await api('getSiswaDetail', { nisn: String(params.NISN) });
+    if (detail.success) {
+      STATE.currentSiswa = detail;
+      renderCheckpointTabs();
+    }
   }
 }
 
