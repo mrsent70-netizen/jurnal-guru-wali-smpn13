@@ -75,6 +75,11 @@
   .stat-card .lbl{font-size:12px;color:var(--muted);margin-top:3px;}
   .stat-card.warn{border-left-color:var(--brick);}
   .stat-card.warn .num{color:var(--brick);}
+  @media(max-width:640px){
+    .stat-card{padding:12px 14px;}
+    .stat-card .num{font-size:20px;}
+    .stat-card .lbl{font-size:11px;}
+  }
 
   .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:18px;margin-bottom:14px;}
   .card h3{margin:0 0 14px;font-size:16px;color:var(--navy);font-weight:600;}
@@ -390,7 +395,18 @@
       </div>
 
       <div class="card">
-        <h3>Ubah Guru Wali Siswa</h3>
+        <h3>Assign Siswa Per Kelas ke Guru Wali</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Pilih kelas → pilih guru wali → semua siswa di kelas itu otomatis menjadi binaan guru wali.</p>
+        <div class="form-grid">
+          <div class="form-group"><label>Kelas</label><select id="adm-assign-kelas"></select></div>
+          <div class="form-group"><label>Guru Wali</label><select id="adm-assign-kelas-guru"></select></div>
+        </div>
+        <button class="btn-sm primary" onclick="submitAssignKelasToGuru()">Assign Kelas ke Guru Wali</button>
+        <div id="assign-kelas-result" style="font-size:12.5px;margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h3>Ubah Guru Wali Siswa (Per Individu)</h3>
         <div class="form-grid">
           <div class="form-group"><label>Siswa</label><select id="adm-assign-siswa"></select></div>
           <div class="form-group"><label>Guru Wali Baru</label><select id="adm-assign-guru"></select></div>
@@ -974,9 +990,18 @@ function populateSiswaSelects() {
   const guruWaliOnly = STATE.guruList.filter(g => g.Role === 'guru_wali' || g.Role === 'bk');
   const guruOptions = guruWaliOnly.map(g => `<option value="${g.NIP_NUPTK}">${g.Nama}</option>`).join('');
   const siswaOptions = STATE.siswaList.map(s => `<option value="${s.NISN}">${s.Nama}</option>`).join('');
-  ['adm-guruwali', 'adm-assign-guru'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = guruOptions; });
+  ['adm-guruwali', 'adm-assign-guru', 'adm-assign-kelas-guru'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = guruOptions; });
   const assignSiswa = document.getElementById('adm-assign-siswa');
   if (assignSiswa) assignSiswa.innerHTML = siswaOptions;
+  
+  // Populate dropdown kelas (30 kelas SMPN 13)
+  const kelasOptions = [
+    '7.1','7.2','7.3','7.4','7.5','7.6','7.7','7.8','7.9',
+    '8.1','8.2','8.3','8.4','8.5','8.6','8.7','8.8','8.9','8.10','8.11',
+    '9.1','9.2','9.3','9.4','9.5','9.6','9.7','9.8','9.9','9.10'
+  ].map(k => `<option value="${k}">${k}</option>`).join('');
+  const kelasSelect = document.getElementById('adm-assign-kelas');
+  if (kelasSelect) kelasSelect.innerHTML = `<option value="">-- Pilih Kelas --</option>${kelasOptions}`;
 }
 
 async function submitAddSiswa() {
@@ -1013,6 +1038,35 @@ async function submitAssignGuruWali() {
   const result = await api('assignGuruWali', params, 'POST');
   showToast(result.message);
   if (result.success) loadSiswaList();
+}
+
+async function submitAssignKelasToGuru() {
+  const kelas = getVal('adm-assign-kelas');
+  const nip = getVal('adm-assign-kelas-guru');
+  if (!kelas || !nip) { showToast('Pilih kelas dan guru wali'); return; }
+  
+  const resultEl = document.getElementById('assign-kelas-result');
+  resultEl.textContent = '⏳ Memproses...';
+  
+  // Cari semua siswa di kelas ini, lalu update guru wali mereka
+  const siswaKelas = STATE.siswaList.filter(s => s.KelasSaatIni === kelas);
+  if (siswaKelas.length === 0) {
+    showToast('Tidak ada siswa di kelas ini');
+    resultEl.textContent = '';
+    return;
+  }
+  
+  let updated = 0;
+  for (const siswa of siswaKelas) {
+    const result = await api('assignGuruWali', { NISN: siswa.NISN, GuruWaliNIP: nip }, 'POST');
+    if (result.success) updated++;
+  }
+  
+  resultEl.textContent = `✓ ${updated} siswa kelas ${kelas} berhasil diassign`;
+  showToast(`${updated} siswa berhasil diassign ke guru wali`);
+  document.getElementById('adm-assign-kelas').value = '';
+  document.getElementById('adm-assign-kelas-guru').value = '';
+  if (updated > 0) loadSiswaList();
 }
 
 /* ---------------- START ---------------- */
