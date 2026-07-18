@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{
     /* Palet: navy tua + emas (brass), di atas kertas hangat -- nuansa jurnal/ledger resmi */
@@ -47,9 +48,7 @@
     font-size:14.5px;font-weight:700;letter-spacing:.3px;transition:background .15s;}
   .btn-primary:hover{background:var(--gold-deep);color:#fff;}
   #login-error{color:var(--brick);font-size:13px;margin-top:10px;min-height:16px;}
-  .logo-circle{width:58px;height:58px;border-radius:50%;background:#fff;
-    display:flex;align-items:center;justify-content:center;margin:0 auto;
-    border:2px solid var(--gold);overflow:hidden;padding:4px;}
+  .logo-circle{width:64px;height:64px;display:flex;align-items:center;justify-content:center;margin:0 auto;}
   .logo-circle img{width:100%;height:100%;object-fit:contain;}
 
   /* ---------- LAYOUT ---------- */
@@ -147,9 +146,8 @@
     text-align:center;position:relative;border:2.5px solid var(--navy);padding:40px 30px;}
   .cover-page::before{content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;
     border:1px solid var(--gold);pointer-events:none;}
-  .cover-crest{width:100px;height:100px;border-radius:50%;border:3px solid var(--gold);
-    background:#fff;display:flex;align-items:center;justify-content:center;
-    margin-bottom:22px;overflow:hidden;padding:6px;}
+  .cover-crest{width:110px;height:110px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:22px;}
   .cover-crest img{width:100%;height:100%;object-fit:contain;}
   .cover-eyebrow{letter-spacing:3px;font-size:12px;color:var(--gold-deep);text-transform:uppercase;
     font-weight:700;margin-bottom:10px;}
@@ -176,6 +174,31 @@
     padding:11px 22px;border-radius:9px;font-size:13.5px;z-index:100;box-shadow:0 10px 28px rgba(0,0,0,.3);
     border-bottom:2px solid var(--gold);}
   .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13.5px;}
+
+  /* ---- Modal preview cetak ---- */
+  #preview-modal{position:fixed;inset:0;z-index:200;}
+  .preview-backdrop{position:absolute;inset:0;background:rgba(12,24,38,.72);}
+  .preview-panel{position:relative;max-width:880px;margin:20px auto;background:#e9e4d6;border-radius:12px;
+    max-height:calc(100vh - 40px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);}
+  .preview-toolbar{background:var(--navy-dark);color:#fff;padding:12px 18px;display:flex;align-items:center;
+    justify-content:space-between;border-bottom:2px solid var(--gold);flex-shrink:0;}
+  .preview-title{font-family:var(--font-display);font-size:15px;}
+  .preview-actions{display:flex;gap:8px;}
+  .preview-actions .btn-sm{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25);}
+  .preview-actions .btn-sm.primary{background:var(--gold);color:var(--navy-dark);border-color:var(--gold);}
+  .preview-actions .btn-sm:hover{background:rgba(255,255,255,.18);}
+  .preview-actions .btn-sm.primary:hover{background:var(--gold-deep);color:#fff;}
+  .preview-body{overflow-y:auto;padding:26px;flex:1;}
+  .preview-body .print-page{background:#fff;max-width:720px;margin:0 auto 26px;box-shadow:0 4px 18px rgba(0,0,0,.18);
+    padding:26px 30px !important;border-radius:2px;}
+  .preview-body .print-page.cover-page{padding:50px 34px !important;min-height:auto !important;aspect-ratio:210/297;}
+  @media(max-width:640px){
+    .preview-panel{margin:0;max-height:100vh;border-radius:0;}
+    .preview-body{padding:14px;}
+    .preview-body .print-page{padding:16px 16px !important;}
+    .preview-actions{gap:5px;}
+    .preview-actions .btn-sm{padding:6px 9px;font-size:11.5px;}
+  }
 </style>
 </head>
 <body>
@@ -197,7 +220,7 @@
 <div id="app-shell">
   <header class="topbar">
     <div class="title" style="display:flex;align-items:center;gap:9px;">
-      <span id="topbar-logo" style="width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;"></span>
+      <span id="topbar-logo" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></span>
       Jurnal Guru Wali
     </div>
     <div class="user-box">
@@ -243,7 +266,7 @@
         <button class="btn-sm" onclick="openBiodataForm()">✏️ Edit Biodata</button>
         <button class="btn-sm primary" onclick="openMonitoringPanel()">📝 Isi Catatan Pendampingan</button>
         <button class="btn-sm" onclick="openKonsultasiForm()">💬 Tambah Catatan Konsultasi</button>
-        <button class="btn-sm" onclick="renderPrintArea(); window.print();">🖨️ Cetak Jurnal Lengkap</button>
+        <button class="btn-sm" onclick="openPrintPreview()">🖨️ Cetak / Unduh Jurnal Lengkap</button>
       </div>
 
       <div class="card">
@@ -372,6 +395,22 @@
 </div>
 
 <div id="print-area"></div>
+
+<!-- ======================= MODAL PREVIEW CETAK ======================= -->
+<div id="preview-modal" class="hidden">
+  <div class="preview-backdrop" onclick="closePrintPreview()"></div>
+  <div class="preview-panel">
+    <div class="preview-toolbar">
+      <span class="preview-title">Pratinjau Jurnal</span>
+      <div class="preview-actions">
+        <button class="btn-sm" onclick="closePrintPreview()">✕ Tutup</button>
+        <button class="btn-sm" onclick="window.print()">🖨️ Cetak</button>
+        <button class="btn-sm primary" id="btn-download-pdf" onclick="downloadPreviewPdf()">⬇️ Unduh PDF</button>
+      </div>
+    </div>
+    <div class="preview-body" id="preview-body"></div>
+  </div>
+</div>
 <div id="toast-container"></div>
 
 <script>
@@ -862,6 +901,49 @@ function renderPrintArea() {
   </div>`;
 
   document.getElementById('print-area').innerHTML = html;
+}
+
+/* ---------------- MODAL PREVIEW CETAK ---------------- */
+function openPrintPreview() {
+  renderPrintArea();
+  const printHtml = document.getElementById('print-area').innerHTML;
+  document.getElementById('preview-body').innerHTML = printHtml;
+  document.getElementById('preview-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePrintPreview() {
+  document.getElementById('preview-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+async function downloadPreviewPdf() {
+  const btn = document.getElementById('btn-download-pdf');
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Menyiapkan PDF...';
+  btn.disabled = true;
+
+  const nama = (STATE.currentSiswa && STATE.currentSiswa.siswa && STATE.currentSiswa.siswa.Nama) || 'Siswa';
+  const filename = `Jurnal_GuruWali_${nama.replace(/\s+/g, '_')}.pdf`;
+  const element = document.getElementById('preview-body');
+
+  const opt = {
+    margin: 0,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+
+  try {
+    await html2pdf().set(opt).from(element).save();
+  } catch (err) {
+    showToast('Gagal membuat PDF: ' + err.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
 }
 
 /* ---------------- ADMIN PANEL ---------------- */
