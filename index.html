@@ -649,7 +649,10 @@ async function openSiswaDetail(nisn) {
     </div>`;
 
   const monByYear = { 1: [], 2: [], 3: [] };
-  result.monitoring.forEach(m => { if (monByYear[m.TahunKe]) monByYear[m.TahunKe].push(m); });
+  result.monitoring.forEach(m => { 
+    const tk = parseInt(m.TahunKe) || 0;
+    if (monByYear[tk]) monByYear[tk].push(m); 
+  });
   document.getElementById('detail-monitoring-view').innerHTML = [1, 2, 3].map(tk => `
     <div style="margin-bottom:10px;">
       <div class="section-title">Tahun Ke-${tk}</div>
@@ -787,7 +790,10 @@ async function submitMonitoring() {
       
       // Refresh detail siswa view
       const monByYear = { 1: [], 2: [], 3: [] };
-      detail.monitoring.forEach(m => { if (monByYear[m.TahunKe]) monByYear[m.TahunKe].push(m); });
+      detail.monitoring.forEach(m => { 
+        const tk = parseInt(m.TahunKe) || 0;
+        if (monByYear[tk]) monByYear[tk].push(m); 
+      });
       document.getElementById('detail-monitoring-view').innerHTML = [1, 2, 3].map(tk => `
         <div style="margin-bottom:10px;">
           <div class="section-title">Tahun Ke-${tk}</div>
@@ -837,7 +843,10 @@ async function hapusKonsultasi(id) {
 function renderPrintArea() {
   const s = STATE.currentSiswa.siswa;
   const monByYear = { 1: [], 2: [], 3: [] };
-  STATE.currentSiswa.monitoring.forEach(m => { if (monByYear[m.TahunKe]) monByYear[m.TahunKe].push(m); });
+  STATE.currentSiswa.monitoring.forEach(m => { 
+    const tk = parseInt(m.TahunKe) || 0;
+    if (monByYear[tk]) monByYear[tk].push(m); 
+  });
   const tahunMasuk = parseInt(s.TahunMasuk) || new Date().getFullYear();
   const rentangTahun = `${tahunMasuk}/${tahunMasuk+1} — ${tahunMasuk+2}/${tahunMasuk+3}`;
 
