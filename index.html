@@ -194,6 +194,11 @@
   .preview-body .print-page{background:#fff;max-width:720px;margin:0 auto 26px;box-shadow:0 4px 18px rgba(0,0,0,.18);
     padding:26px 30px !important;border-radius:2px;}
   .preview-body .print-page.cover-page{padding:50px 34px !important;min-height:auto !important;aspect-ratio:210/297;}
+  /* Mode ekspor PDF: matikan efek kartu/bayangan supaya hasil tangkapan bersih seperti halaman kertas asli */
+  #preview-body.exporting{padding:0;background:#fff;}
+  #preview-body.exporting .print-page{max-width:none;box-shadow:none;border-radius:0;margin:0;
+    padding:16mm 14mm !important;}
+  #preview-body.exporting .print-page.cover-page{aspect-ratio:auto;min-height:265mm !important;}
   @media(max-width:640px){
     .preview-panel{margin:0;max-height:100vh;border-radius:0;}
     .preview-body{padding:14px;}
@@ -927,35 +932,27 @@ async function downloadPreviewPdf() {
 
   const nama = (STATE.currentSiswa && STATE.currentSiswa.siswa && STATE.currentSiswa.siswa.Nama) || 'Siswa';
   const filename = `Jurnal_GuruWali_${nama.replace(/\s+/g, '_')}.pdf`;
+  const element = document.getElementById('preview-body');
 
-  // Pakai konten bersih dari #print-area (bukan versi kartu di modal preview),
-  // ditempatkan sementara di luar layar dengan lebar A4 supaya page-break & layout akurat.
-  renderPrintArea();
-  const sourceHtml = document.getElementById('print-area').innerHTML;
-  const temp = document.createElement('div');
-  temp.style.position = 'fixed';
-  temp.style.top = '0';
-  temp.style.left = '-99999px';
-  temp.style.width = '210mm';
-  temp.style.background = '#fff';
-  temp.innerHTML = sourceHtml;
-  document.body.appendChild(temp);
+  // html2canvas butuh elemen yang BENAR-BENAR tampil di layar (bukan disembunyikan off-screen),
+  // jadi kita pakai konten modal yang sedang terbuka, tapi matikan dulu gaya kartu/bayangannya.
+  element.classList.add('exporting');
 
   const opt = {
     margin: 0,
     filename: filename,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: temp.scrollWidth },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'table'] }
   };
 
   try {
-    await html2pdf().set(opt).from(temp).save();
+    await html2pdf().set(opt).from(element).save();
   } catch (err) {
     showToast('Gagal membuat PDF: ' + err.message);
   } finally {
-    document.body.removeChild(temp);
+    element.classList.remove('exporting');
     btn.textContent = originalText;
     btn.disabled = false;
   }
