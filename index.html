@@ -313,7 +313,7 @@
         <div class="form-grid" id="biodata-riwayat"></div>
         <div class="section-title">D. Hal Lain</div>
         <div class="form-grid" id="biodata-hallain"></div>
-                <div class="section-title" style="margin-top:16px;">E. Foto Siswa (Drag & Drop)</div>
+                        <div class="section-title" style="margin-top:16px;">E. Foto Siswa (Drag & Drop)</div>
         
         <!-- Preview -->
         <div style="text-align:center;margin-bottom:15px;">
@@ -321,11 +321,16 @@
         </div>
         
         <!-- Drag & Drop Area -->
-        <div id="foto-dropzone" style="border:3px dashed var(--gold);border-radius:8px;padding:30px;text-align:center;background-color:#fafaf0;cursor:pointer;transition:all 0.3s ease;margin-bottom:15px;user-select:none;">
+        <div id="foto-dropzone" 
+          onclick="document.getElementById('foto-input').click();"
+          ondragover="event.preventDefault(); this.style.backgroundColor='#f0ebe0'; this.style.borderColor='#B8924A';"
+          ondragleave="this.style.backgroundColor='#fafaf0'; this.style.borderColor='var(--gold)';"
+          ondrop="event.preventDefault(); if(event.dataTransfer.files.length) handleFotoFile(event.dataTransfer.files[0]);"
+          style="border:3px dashed var(--gold);border-radius:8px;padding:30px;text-align:center;background-color:#fafaf0;cursor:pointer;transition:all 0.3s ease;margin-bottom:15px;user-select:none;">
           <div style="font-size:48px;margin-bottom:8px;">📷</div>
           <div style="font-weight:600;color:var(--navy);margin-bottom:4px;">Seret Foto Di Sini</div>
           <div style="font-size:12px;color:var(--muted);">atau klik untuk pilih file dari komputer</div>
-          <input type="file" id="foto-input" accept="image/*" style="display:none;">
+          <input type="file" id="foto-input" accept="image/*" style="display:none;" onchange="if(this.files.length) handleFotoFile(this.files[0]);">
         </div>
         
         <button class="btn-primary" style="margin-top:14px;max-width:220px;" onclick="submitBiodata()">💾 Simpan Biodata</button>
@@ -1186,5 +1191,41 @@ setTimeout(() => setupFotoDragDrop(), 100);
 </script>
 
 
+<script>
+// ============ HANDLE FOTO FILE (SIMPLE VERSION) ============
+function handleFotoFile(file) {
+  console.log('📷 File selected:', file.name);
+  
+  if (!file.type.startsWith('image/')) {
+    alert('❌ Hanya gambar!');
+    return;
+  }
+  
+  if (file.size > 10 * 1024 * 1024) {
+    alert('❌ Max 10 MB');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result;
+    
+    if (!window.STATE) window.STATE = {};
+    if (!window.STATE.formBiodata) window.STATE.formBiodata = {};
+    
+    window.STATE.formBiodata.FotoURL = base64;
+    console.log('✓ Foto tersimpan');
+    
+    const preview = document.getElementById('foto-preview');
+    const dropzone = document.getElementById('foto-dropzone');
+    
+    preview.src = base64;
+    preview.style.display = 'block';
+    
+    dropzone.innerHTML = `<div style="font-size:14px;color:#B8924A;font-weight:600;">✓ ${file.name}</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
 </body>
 </html>
