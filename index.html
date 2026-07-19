@@ -731,12 +731,56 @@ function openBiodataForm() {
 }
 
 async function submitBiodata() {
-  if (!STATE.currentSiswa) { alert('Pilih siswa dulu!'); return; }
-  const headers = ['Nama','JK','TempatLahir','TglLahir','Agama','Alamat','JarakKM','Transportasi','KetTinggal','NamaAyah','PekerjaanAyah','AlamatAyah','HPAyah','NamaIbu','PekerjaanIbu','AlamatIbu','HPIbu','NamaWali','PekerjaanWali','AlamatWali','HPWali','RiwayatTK','RiwayatSD','SMPAsal','PrestasiAkademik','PrestasiNonAkademik','TinggiBadan','BeratBadan','GolDarah','RiwayatPenyakit','Bakat','Hobi','CitaCita','Ekskul','Organisasi','FotoURL'];
-  const data = { NISN: STATE.currentSiswa.siswa.NISN };
-  headers.forEach(h => { const el = document.getElementById('bf-'+h); if(el) data[h] = el.value; });
-  if (STATE.formBiodata && STATE.formBiodata.FotoURL) data.FotoURL = STATE.formBiodata.FotoURL;
-  apiCall('saveBiodata', data, (res) => { if(res.success) { alert('✓ Biodata tersimpan!'); getSiswaDetail(STATE.currentSiswa.siswa.NISN); } else alert('❌ '+res.message); });
+  try {
+    console.log('📝 Klik simpan biodata...');
+    
+    if (!STATE.currentSiswa) { 
+      alert('❌ Pilih siswa dulu!'); 
+      return; 
+    }
+    
+    console.log('✓ Siswa dipilih:', STATE.currentSiswa.siswa.NISN);
+    
+    const headers = ['Nama','JK','TempatLahir','TglLahir','Agama','Alamat','JarakKM','Transportasi','KetTinggal','NamaAyah','PekerjaanAyah','AlamatAyah','HPAyah','NamaIbu','PekerjaanIbu','AlamatIbu','HPIbu','NamaWali','PekerjaanWali','AlamatWali','HPWali','RiwayatTK','RiwayatSD','SMPAsal','PrestasiAkademik','PrestasiNonAkademik','TinggiBadan','BeratBadan','GolDarah','RiwayatPenyakit','Bakat','Hobi','CitaCita','Ekskul','Organisasi','FotoURL'];
+    
+    const data = { NISN: STATE.currentSiswa.siswa.NISN };
+    
+    // Collect form data
+    headers.forEach(h => { 
+      const el = document.getElementById('bf-'+h); 
+      if(el) data[h] = el.value; 
+    });
+    
+    console.log('✓ Form data collected, fields:', Object.keys(data).length);
+    
+    // Add foto jika ada
+    if (STATE.formBiodata && STATE.formBiodata.FotoURL) {
+      data.FotoURL = STATE.formBiodata.FotoURL;
+      console.log('✓ Foto ditambahkan, size:', (data.FotoURL.length / 1024).toFixed(2) + ' KB');
+    } else {
+      console.log('⚠️ Foto tidak ada di STATE');
+    }
+    
+    console.log('🚀 Mengirim ke backend...');
+    
+    // Send ke backend
+    apiCall('saveBiodata', data, (res) => { 
+      console.log('📨 Response dari backend:', res);
+      
+      if(res.success) { 
+        alert('✓ Biodata tersimpan!'); 
+        console.log('✓ SUCCESS');
+        getSiswaDetail(STATE.currentSiswa.siswa.NISN); 
+      } else {
+        alert('❌ Error: ' + res.message); 
+        console.log('❌ Error:', res.message);
+      }
+    });
+    
+  } catch(err) {
+    console.error('❌ Exception:', err);
+    alert('❌ Error: ' + err.message);
+  }
 }
 
 /* ---------------- MONITORING FORM ---------------- */
