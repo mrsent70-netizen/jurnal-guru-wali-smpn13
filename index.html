@@ -1117,30 +1117,6 @@ document.getElementById('login-logo').innerHTML = `<img src="${LOGO_DATA_URL}" a
 document.getElementById('topbar-logo').innerHTML = `<img src="${LOGO_DATA_URL}" alt="Logo" style="width:100%;height:100%;object-fit:contain;">`;
 checkExistingSession();
 
-// ============ LOAD FOTO FROM URL ============
-function loadFotoFromURL() {
-  const urlInput = document.getElementById('bf-FotoURL');
-  const fotoPreview = document.getElementById('foto-preview');
-  const dropzone = document.getElementById('foto-dropzone');
-  const url = urlInput.value.trim();
-  
-  if (!url) {
-    fotoPreview.style.display = 'none';
-    return;
-  }
-  
-  if (!window.STATE) window.STATE = {};
-  if (!window.STATE.formBiodata) window.STATE.formBiodata = {};
-  
-  window.STATE.formBiodata.FotoURL = url;
-  fotoPreview.src = url;
-  fotoPreview.style.display = 'block';
-  
-  dropzone.innerHTML = `<div style="font-size:14px;color:var(--gold);font-weight:600;">✓ Foto dari URL sudah dipilih</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Klik untuk ganti dengan file lokal</div>`;
-  
-  console.log('✓ Foto dari URL loaded');
-}
-
 // ============ DRAG & DROP FOTO ============
 function setupFotoDragDrop() {
   const dropzone = document.getElementById('foto-dropzone');
@@ -1209,83 +1185,6 @@ setTimeout(() => setupFotoDragDrop(), 100);
 
 </script>
 
-
-// ============ LOAD FOTO FROM URL ============
-function loadFotoFromURL() {
-  const urlInput = document.getElementById('bf-FotoURL');
-  const fotoPreview = document.getElementById('foto-preview');
-  const dropzone = document.getElementById('foto-dropzone');
-  const url = urlInput.value.trim();
-  
-  if (!url) {
-    fotoPreview.style.display = 'none';
-    return;
-  }
-  
-  if (!window.STATE) window.STATE = {};
-  if (!window.STATE.formBiodata) window.STATE.formBiodata = {};
-  
-  window.STATE.formBiodata.FotoURL = url;
-  
-  fotoPreview.src = url;
-  fotoPreview.style.display = 'block';
-  
-  dropzone.innerHTML = `<div style="font-size:14px;color:var(--gold);font-weight:600;">✓ Foto dari URL sudah dipilih</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Klik untuk ganti dengan file lokal</div>`;
-  
-  console.log('✓ Foto dari URL loaded:', url);
-}
-
-<script>
-// ============ DRAG & DROP FOTO ============
-const dropzone = document.getElementById('foto-dropzone');
-const fotoInput = document.getElementById('foto-input');
-const fotoPreview = document.getElementById('foto-preview');
-
-if (dropzone && fotoInput) {
-  dropzone.addEventListener('click', () => fotoInput.click());
-  
-  dropzone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropzone.style.backgroundColor = '#f0ebe0';
-    dropzone.style.borderColor = '#B8924A';
-  });
-  
-  dropzone.addEventListener('dragleave', () => {
-    dropzone.style.backgroundColor = '#fafaf0';
-    dropzone.style.borderColor = 'var(--gold)';
-  });
-  
-  dropzone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropzone.style.backgroundColor = '#fafaf0';
-    const files = e.dataTransfer.files;
-    if (files.length > 0) handleFotoFile(files[0]);
-  });
-  
-  fotoInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) handleFotoFile(e.target.files[0]);
-  });
-}
-
-function handleFotoFile(file) {
-  if (!file.type.startsWith('image/')) {
-    alert('❌ Hanya file gambar yang diperbolehkan (JPG, PNG, dll)');
-    return;
-  }
-  
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64 = e.target.result;
-    if (!STATE.formBiodata) STATE.formBiodata = {};
-    STATE.formBiodata.FotoURL = base64;
-    
-    fotoPreview.src = base64;
-    fotoPreview.style.display = 'block';
-    
-    dropzone.innerHTML = `<div style="font-size:14px;color:var(--gold);font-weight:600;">✓ Foto dipilih</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Klik untuk ganti foto</div>`;
-  };
-  reader.readAsDataURL(file);
-}
 
 </body>
 </html>
