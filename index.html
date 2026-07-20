@@ -763,19 +763,18 @@ async function submitBiodata() {
     
     console.log('🚀 Mengirim ke backend...');
     
-    // Send ke backend
-    apiCall('saveBiodata', data, (res) => { 
-      console.log('📨 Response dari backend:', res);
-      
-      if(res.success) { 
-        alert('✓ Biodata tersimpan!'); 
-        console.log('✓ SUCCESS');
-        getSiswaDetail(STATE.currentSiswa.siswa.NISN); 
-      } else {
-        alert('❌ Error: ' + res.message); 
-        console.log('❌ Error:', res.message);
-      }
-    });
+    // Send ke backend menggunakan api() function
+    const res = await api('saveBiodata', data, 'POST');
+    console.log('📨 Response dari backend:', res);
+    
+    if(res.success) { 
+      alert('✓ Biodata tersimpan!'); 
+      console.log('✓ SUCCESS');
+      getSiswaDetail(STATE.currentSiswa.siswa.NISN); 
+    } else {
+      alert('❌ Error: ' + (res.message || 'Unknown error')); 
+      console.log('❌ Error:', res.message);
+    }
     
   } catch(err) {
     console.error('❌ Exception:', err);
