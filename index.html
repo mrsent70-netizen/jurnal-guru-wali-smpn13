@@ -907,6 +907,18 @@ async function hapusKonsultasi(id) {
 /* ---------------- CETAK JURNAL ---------------- */
 function renderPrintArea() {
   const s = STATE.currentSiswa.siswa;
+  
+  // DEBUG: Cek apakah FotoURL ada
+  console.log('=== DEBUG renderPrintArea ===');
+  console.log('Siswa:', s.Nama);
+  console.log('FotoURL ada?', !!s.FotoURL);
+  if (s.FotoURL) {
+    console.log('FotoURL length:', s.FotoURL.length);
+    console.log('FotoURL preview:', s.FotoURL.substring(0, 100) + '...');
+  } else {
+    console.log('⚠️ FotoURL KOSONG atau undefined');
+  }
+  
   const monByYear = { 1: [], 2: [], 3: [] };
   STATE.currentSiswa.monitoring.forEach(m => { 
     const tk = parseInt(m.TahunKe) || 0;
