@@ -770,7 +770,8 @@ async function submitBiodata() {
     if(res.success) { 
       alert('✓ Biodata tersimpan!'); 
       console.log('✓ SUCCESS');
-      getSiswaDetail(STATE.currentSiswa.siswa.NISN); 
+      // Refresh untuk reload data terbaru
+      setTimeout(() => location.reload(), 500);
     } else {
       alert('❌ Error: ' + (res.message || 'Unknown error')); 
       console.log('❌ Error:', res.message);
