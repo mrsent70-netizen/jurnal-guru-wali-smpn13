@@ -1280,21 +1280,46 @@ function handleFotoFile(file) {
   
   const reader = new FileReader();
   reader.onload = (e) => {
-    const base64 = e.target.result;
-    
-    if (!window.STATE) window.STATE = {};
-    if (!window.STATE.formBiodata) window.STATE.formBiodata = {};
-    
-    window.STATE.formBiodata.FotoURL = base64;
-    console.log('✓ Foto tersimpan');
-    
-    const preview = document.getElementById('foto-preview');
-    const dropzone = document.getElementById('foto-dropzone');
-    
-    preview.src = base64;
-    preview.style.display = 'block';
-    
-    dropzone.innerHTML = `<div style="font-size:14px;color:#B8924A;font-weight:600;">✓ ${file.name}</div>`;
+    // COMPRESS foto menggunakan canvas
+    const img = new Image();
+    img.onload = () => {
+      console.log('📐 Ukuran asli:', img.width, 'x', img.height);
+      
+      // Resize ke ukuran standar kartu (width max 300px)
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      const maxWidth = 300;
+      
+      if (w > maxWidth) {
+        h = Math.floor(h * maxWidth / w);
+        w = maxWidth;
+      }
+      
+      canvas.width = w;
+      canvas.height = h;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      
+      // Convert ke JPEG dengan quality rendah (0.5 = 50%)
+      const base64 = canvas.toDataURL('image/jpeg', 0.5);
+      
+      console.log('✓ Foto compressed ke:', (base64.length / 1024).toFixed(1), 'KB (dari', (file.size / 1024).toFixed(1), 'KB)');
+      
+      if (!window.STATE) window.STATE = {};
+      if (!window.STATE.formBiodata) window.STATE.formBiodata = {};
+      
+      window.STATE.formBiodata.FotoURL = base64;
+      
+      const preview = document.getElementById('foto-preview');
+      const dropzone = document.getElementById('foto-dropzone');
+      
+      preview.src = base64;
+      preview.style.display = 'block';
+      
+      dropzone.innerHTML = `<div style="font-size:14px;color:#B8924A;font-weight:600;">✓ ${file.name} (compressed)</div>`;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
