@@ -745,10 +745,12 @@ async function submitBiodata() {
     
     const data = { NISN: STATE.currentSiswa.siswa.NISN };
     
-    // Collect form data
+    // Collect form data - HANYA yang punya value
     headers.forEach(h => { 
       const el = document.getElementById('bf-'+h); 
-      if(el) data[h] = el.value; 
+      if(el && el.value && el.value.trim()) { // Hanya kirim yang punya isi
+        data[h] = el.value; 
+      }
     });
     
     console.log('✓ Form data collected, fields:', Object.keys(data).length);
