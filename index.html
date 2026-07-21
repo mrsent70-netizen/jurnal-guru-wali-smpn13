@@ -426,6 +426,19 @@
       </div>
 
       <div class="card">
+        <h3>Kelola Foto Siswa</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">
+          1️⃣ Klik "Buka Folder Foto" → Upload foto dengan nama siswa (ADINDA.JPG, AHMAD.JPG, dll)<br>
+          2️⃣ Klik "Generate Link Foto" → Sistem otomatis scan folder & update kolom FotoURL
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-sm primary" onclick="openFotoFolder()">📁 Buka Folder Foto</button>
+          <button class="btn-sm success" onclick="generateFotoLinks()">🔗 Generate Link Foto</button>
+        </div>
+        <div id="foto-result" style="font-size:12.5px;margin-top:10px;color:var(--success);"></div>
+      </div>
+
+      <div class="card">
         <h3>Ubah Guru Wali Siswa (Per Individu)</h3>
         <div class="form-grid">
           <div class="form-group"><label>Siswa</label><select id="adm-assign-siswa"></select></div>
@@ -461,7 +474,7 @@
    KONFIGURASI - GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
 ===================================================== */
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbzYpmO6H3zwYp7Z7kvSQzcMTff5Fj_1ic0Pjo9Ev4vd3NHPvW_H9zlH0Youna9wvky-/exec'
+  API_URL: 'https://script.google.com/macros/s/AKfycbzizYdribCfRCKlmHl6KAqkaLPkyWu4u4DomW78pM4BQuSrt2Lw3TOR3jNVJtR9IhUY/exec'
 };
 
 // Logo resmi Tut Wuri Handayani (dipakai di login & cover cetak jurnal)
@@ -758,7 +771,9 @@ async function submitBiodata() {
     // Add foto jika ada
     if (STATE.formBiodata && STATE.formBiodata.FotoURL) {
       data.FotoURL = STATE.formBiodata.FotoURL;
-      console.log('✓ Foto ditambahkan, size:', (data.FotoURL.length / 1024).toFixed(2) + ' KB');
+      const fotoKB = (data.FotoURL.length / 1024).toFixed(2);
+      console.log('✓ Foto ditambahkan, size:', fotoKB + ' KB');
+      console.log('🚀 Mengirim ke backend dengan foto base64 (first 100 chars):', data.FotoURL.substring(0, 100) + '...');
     } else {
       console.log('⚠️ Foto tidak ada di STATE');
     }
@@ -951,45 +966,51 @@ function renderPrintArea() {
       <h2>A. Biodata Murid</h2>
       <p class="print-footer-note" style="margin-bottom:14px;">Kelas ${s.KelasSaatIni} — Tahun Pelajaran ${rentangTahun.split('—')[0].trim()}</p>
       
-      <!-- FOTO SISWA - DISPLAY EKSPLISIT -->
-      <div style="margin-bottom:20px; padding:15px; background:#f9f7f4; border-radius:8px; border-left:4px solid var(--gold); text-align:center;">
-        <div style="font-weight:bold; font-size:14px; margin-bottom:10px; color:var(--navy);">FOTO SISWA</div>
-        ${s.FotoURL ? `
-          <div style="display:inline-block;">
-            <img src="${s.FotoURL}" alt="Foto Siswa ${s.Nama}" style="width:120px; height:150px; object-fit:cover; border:2px solid var(--gold); border-radius:6px; display:block;">
-            <div style="margin-top:8px; font-size:11px; font-weight:600; color:var(--navy);">${s.Nama}</div>
+      <div style="display:flex; gap:16px; margin-bottom:20px;">
+        
+        <!-- KOLOM KIRI: DATA PRIBADI -->
+        <div style="flex:1;">
+          <table>
+            <tr><th colspan="4">Data Pribadi</th></tr>
+            <tr><td width="22%">Nama Lengkap</td><td width="28%">${s.Nama}</td><td width="22%">Jenis Kelamin</td><td>${s.JK === 'L' ? 'Laki-laki' : s.JK === 'P' ? 'Perempuan' : (s.JK||'-')}</td></tr>
+            <tr><td>NISN</td><td>${s.NISN}</td><td>NIS</td><td>${s.NIS}</td></tr>
+            <tr><td>Tempat, Tgl Lahir</td><td>${s.TempatLahir || '-'}, ${fmtDate(s.TglLahir)}</td><td>Agama</td><td>${s.Agama || '-'}</td></tr>
+            <tr><td>Alamat</td><td colspan="3">${s.Alamat || '-'}</td></tr>
+            <tr><td>Jarak ke Sekolah</td><td>${s.JarakKM || '-'} km</td><td>Transportasi</td><td>${s.Transportasi || '-'}</td></tr>
+            <tr><td>Tinggal Bersama</td><td colspan="3">${s.KetTinggal || '-'}</td></tr>
+          </table>
+          <table>
+            <tr><th colspan="4">Data Orang Tua / Wali</th></tr>
+            <tr><td width="22%">Nama Ayah</td><td width="28%">${s.NamaAyah || '-'}</td><td width="22%">Pekerjaan</td><td>${s.PekerjaanAyah || '-'}</td></tr>
+            <tr><td>HP Ayah</td><td colspan="3">${s.HPAyah || '-'}</td></tr>
+            <tr><td>Nama Ibu</td><td>${s.NamaIbu || '-'}</td><td>Pekerjaan</td><td>${s.PekerjaanIbu || '-'}</td></tr>
+            <tr><td>HP Ibu</td><td colspan="3">${s.HPIbu || '-'}</td></tr>
+            ${s.NamaWali ? `<tr><td>Nama Wali</td><td>${s.NamaWali}</td><td>Pekerjaan</td><td>${s.PekerjaanWali || '-'}</td></tr>` : ''}
+          </table>
+          <table>
+            <tr><th colspan="4">Riwayat Pendidikan, Kesehatan & Hal Lain</th></tr>
+            <tr><td width="22%">TK</td><td width="28%">${s.RiwayatTK || '-'}</td><td width="22%">SD</td><td>${s.RiwayatSD || '-'}</td></tr>
+            <tr><td>Prestasi Akademik</td><td colspan="3">${s.PrestasiAkademik || '-'}</td></tr>
+            <tr><td>Prestasi Non Akademik</td><td colspan="3">${s.PrestasiNonAkademik || '-'}</td></tr>
+            <tr><td>TB / BB / Gol. Darah</td><td>${s.TinggiBadan||'-'} cm / ${s.BeratBadan||'-'} kg / ${s.GolDarah||'-'}</td><td>Riwayat Penyakit</td><td>${s.RiwayatPenyakit || '-'}</td></tr>
+            <tr><td>Bakat / Hobi</td><td>${s.Bakat||'-'} / ${s.Hobi||'-'}</td><td>Cita-cita</td><td>${s.CitaCita || '-'}</td></tr>
+            <tr><td>Ekstrakurikuler</td><td>${s.Ekskul || '-'}</td><td>Organisasi</td><td>${s.Organisasi || '-'}</td></tr>
+          </table>
+        </div>
+        
+        <!-- KOLOM KANAN: FOTO SISWA -->
+        <div style="width:120px; flex-shrink:0;">
+          <div style="padding:12px; background:#f9f7f4; border-radius:8px; border-left:4px solid var(--gold); text-align:center;">
+            <div style="font-weight:bold; font-size:11px; margin-bottom:8px; color:var(--navy); text-transform:uppercase; letter-spacing:0.5px;">Foto</div>
+            ${s.FotoURL ? `
+              <img src="${s.FotoURL}" alt="Foto ${s.Nama}" style="width:100px; height:120px; object-fit:cover; border:2px solid var(--gold); border-radius:4px; display:block; margin:0 auto 6px;">
+              <div style="font-size:9px; font-weight:600; color:var(--navy); word-break:break-word; line-height:1.2;">${s.Nama}</div>
+            ` : `
+              <div style="width:100px; height:120px; background:var(--surface-1); border:1px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; margin:0 auto 6px; font-size:10px; color:var(--muted);">-</div>
+            `}
           </div>
-        ` : `
-          <div style="color:var(--muted); font-size:12px; padding:20px;">[ Foto tidak tersedia ]</div>
-        `}
+        </div>
       </div>
-      
-      <table>
-        <tr><th colspan="4">Data Pribadi</th></tr>
-        <tr><td width="22%">Nama Lengkap</td><td width="28%">${s.Nama}</td><td width="22%">Jenis Kelamin</td><td>${s.JK === 'L' ? 'Laki-laki' : s.JK === 'P' ? 'Perempuan' : (s.JK||'-')}</td></tr>
-        <tr><td>NISN</td><td>${s.NISN}</td><td>NIS</td><td>${s.NIS}</td></tr>
-        <tr><td>Tempat, Tgl Lahir</td><td>${s.TempatLahir || '-'}, ${fmtDate(s.TglLahir)}</td><td>Agama</td><td>${s.Agama || '-'}</td></tr>
-        <tr><td>Alamat</td><td colspan="3">${s.Alamat || '-'}</td></tr>
-        <tr><td>Jarak ke Sekolah</td><td>${s.JarakKM || '-'} km</td><td>Transportasi</td><td>${s.Transportasi || '-'}</td></tr>
-        <tr><td>Tinggal Bersama</td><td colspan="3">${s.KetTinggal || '-'}</td></tr>
-      </table>
-      <table>
-        <tr><th colspan="4">Data Orang Tua / Wali</th></tr>
-        <tr><td width="22%">Nama Ayah</td><td width="28%">${s.NamaAyah || '-'}</td><td width="22%">Pekerjaan</td><td>${s.PekerjaanAyah || '-'}</td></tr>
-        <tr><td>HP Ayah</td><td colspan="3">${s.HPAyah || '-'}</td></tr>
-        <tr><td>Nama Ibu</td><td>${s.NamaIbu || '-'}</td><td>Pekerjaan</td><td>${s.PekerjaanIbu || '-'}</td></tr>
-        <tr><td>HP Ibu</td><td colspan="3">${s.HPIbu || '-'}</td></tr>
-        ${s.NamaWali ? `<tr><td>Nama Wali</td><td>${s.NamaWali}</td><td>Pekerjaan</td><td>${s.PekerjaanWali || '-'}</td></tr>` : ''}
-      </table>
-      <table>
-        <tr><th colspan="4">Riwayat Pendidikan, Kesehatan & Hal Lain</th></tr>
-        <tr><td width="22%">TK</td><td width="28%">${s.RiwayatTK || '-'}</td><td width="22%">SD</td><td>${s.RiwayatSD || '-'}</td></tr>
-        <tr><td>Prestasi Akademik</td><td colspan="3">${s.PrestasiAkademik || '-'}</td></tr>
-        <tr><td>Prestasi Non Akademik</td><td colspan="3">${s.PrestasiNonAkademik || '-'}</td></tr>
-        <tr><td>TB / BB / Gol. Darah</td><td>${s.TinggiBadan||'-'} cm / ${s.BeratBadan||'-'} kg / ${s.GolDarah||'-'}</td><td>Riwayat Penyakit</td><td>${s.RiwayatPenyakit || '-'}</td></tr>
-        <tr><td>Bakat / Hobi</td><td>${s.Bakat||'-'} / ${s.Hobi||'-'}</td><td>Cita-cita</td><td>${s.CitaCita || '-'}</td></tr>
-        <tr><td>Ekstrakurikuler</td><td>${s.Ekskul || '-'}</td><td>Organisasi</td><td>${s.Organisasi || '-'}</td></tr>
-      </table>
       <div class="signature-block">
         <div class="signature-item"><div class="sig-space"></div><span class="sig-name">Orang Tua / Wali</span></div>
         <div class="signature-item"><div class="sig-space"></div><span class="sig-name">${s.Nama}</span><br><span style="font-size:11px;color:var(--muted);">Murid</span></div>
@@ -1260,12 +1281,44 @@ function handleFotoFile(file, dropzone, fotoPreview) {
 
 setTimeout(() => setupFotoDragDrop(), 100);
 
-</script>
+// ===== FOTO MANAGEMENT =====
+async function openFotoFolder() {
+  const res = await api('getFotoFolderLink', {});
+  if (res.link) {
+    window.open(res.link, '_blank');
+  } else {
+    alert('❌ Error: ' + res.message);
+  }
+}
 
+async function generateFotoLinks() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerText = '⏳ Processing...';
+  
+  try {
+    const res = await api('generateFotoLinks', {});
+    
+    const resultDiv = document.getElementById('foto-result');
+    if (res.success) {
+      resultDiv.innerHTML = '✅ ' + res.message;
+      resultDiv.style.color = 'var(--success)';
+      alert('✅ ' + res.message);
+    } else {
+      resultDiv.innerHTML = '❌ ' + res.message;
+      resultDiv.style.color = 'var(--error)';
+      alert('❌ ' + res.message);
+    }
+  } catch (err) {
+    alert('❌ Error: ' + err.message);
+    document.getElementById('foto-result').innerHTML = '❌ Error: ' + err.message;
+    document.getElementById('foto-result').style.color = 'var(--error)';
+  } finally {
+    btn.disabled = false;
+    btn.innerText = '🔗 Generate Link Foto';
+  }
+}
 
-<script>
-// ============ HANDLE FOTO FILE (SIMPLE VERSION) ============
-function handleFotoFile(file) {
   console.log('📷 File selected:', file.name);
   
   if (!file.type.startsWith('image/')) {
